@@ -78,13 +78,20 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
     {
         std::string symbol = std::get<std::string>(event.get_parameter("symbol"));
         std::string period = std::get<std::string>(event.get_parameter("period"));
-        dpp::message msg{"Here is your candlestick chart for " + symbol};
+        std::string showV = std::get<std::string>(event.get_parameter("volume"));
 
         // Use std::async to create the graph asynchronously
         auto future = std::async(std::launch::async, [&]()
                                  {
                 std::vector<std::vector<std::string>> ohlcData = fetchOHLCData(symbol, period);
-                createCandle(ohlcData); });
+                 if (showV == "n")
+                {
+                    createCandle(ohlcData);
+                }
+                else
+                {
+                    createCandleAndVolume(ohlcData);
+                }});
 
         // Wait for the graph creation to finish
         future.wait();
@@ -92,7 +99,15 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         // Additional delay to make sure the file is fully written to disk
         std::this_thread::sleep_for(std::chrono::milliseconds{500});
 
-        const std::string imagePath = "../images/candle_chart.png";
+        std::string imagePath;
+        if (showV == "n")
+        {
+            imagePath = "../images/candle_chart.png";
+        }
+        else
+        {
+            imagePath = "../images/candle_volume.png";
+        }
         const int maxAttempts = 5;
         const int timeoutMs = 1000; // 1 second
         int attempts = 0;
@@ -107,15 +122,26 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         // If the file exists, add it to the message
         if (std::filesystem::exists(imagePath))
         {
-            msg.add_file("candle_chart.png", dpp::utility::read_file(imagePath));
-            event.reply(msg);
+            if (showV == "n")
+            {
+                dpp::message msg{"Here is your candlestick chart for " + symbol};
+                msg.add_file("candle_chart.png", dpp::utility::read_file(imagePath));
+                event.reply(msg);
+            }
+            else
+            {
+                dpp::message msg{"Here are your candlestick chart and volume graph for " + symbol};
+                msg.add_file("candle_volume.png", dpp::utility::read_file(imagePath));
+                event.reply(msg);
+            }
+            
             // Delete the file after sending the message
             std::filesystem::remove(imagePath);
         }
         else
         {
             // If the file doesn't exist, reply with an error message
-            dpp::message errorMsg{"Oops! Something went wrong while creating the candlestick chart."};
+            dpp::message errorMsg{"Oops! Something went wrong while creating the candlestick chart (and volume graph)."};
             event.reply(errorMsg);
         }
     }
@@ -158,7 +184,7 @@ void Bot::registerCommands()
         add_choice(dpp::command_option_choice("Both", std::string("3"))));
 
     // Create slash command
-    dpp::slashcommand newcommand2("candlestick", "Get a candlestick for a stock", bot.me.id);
+    dpp::slashcommand newcommand2("candlestick", "Get a candlestick for a stock (and optionally with volume graph)", bot.me.id);
     newcommand2.add_option(
         dpp::command_option(dpp::co_string, "symbol", "Stock symbol", true));
     newcommand2.add_option(
@@ -170,6 +196,10 @@ void Bot::registerCommands()
         add_choice(dpp::command_option_choice("3 weeks", std::string("3w"))).
         add_choice(dpp::command_option_choice("2 weeks", std::string("2w"))).
         add_choice(dpp::command_option_choice("1 week", std::string("1w"))));
+    newcommand2.add_option(
+        dpp::command_option(dpp::co_string, "volume", "Show volumes (creates additional graph with volume data)", true).
+        add_choice(dpp::command_option_choice("Yes", std::string("y"))).
+        add_choice(dpp::command_option_choice("No", std::string("n"))));
 
     // Add commands to vector and register them
     std::vector<dpp::slashcommand> commands;

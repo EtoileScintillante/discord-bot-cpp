@@ -22,8 +22,6 @@ private:
     void onReady(const dpp::ready_t& event);
     void registerCommands();
 
-    // Add any other helper functions or member variables you may need here.
-
     dpp::cluster bot;
 };
 
