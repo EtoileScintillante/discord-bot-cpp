@@ -32,5 +32,16 @@ void priceGraph(const std::vector<std::vector<std::string>>& ohlcData, int mode)
 ///       may appear very thin or small, making it challenging to discern the details.
 void createCandle(const std::vector<std::vector<std::string>>& ohlcData);
 
+/// Plot OHLC and volume data and saves the candlestick chart and volume graph as candle_volume.png in the folder 'images'.
+/// This function takes OHLCV (Open-High-Low-Close-Volume) data and creates a candlestick chart and a graph with the volumes.
+/// The candlestick chart will appear above the volume graph in the image.
+/// @param ohlcvData A 2D vector containing OHLC data, where each row represents
+///                 a data point and the columns represent: date, open, high,
+///                 low, close and volume (in this order).
+/// @note Please note that using OHLC data of a period >=6 months may lead
+///       to a candlestick chart and volume graph that is are clearly readable. In such cases, the candlesticks
+///       and volume bars may appear very thin or small, making it challenging to discern the details.
+void createCandleAndVolume(const std::vector<std::vector<std::string>>& ohlcvData);
+
 
 #endif // VISUALIZE_H
