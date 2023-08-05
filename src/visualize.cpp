@@ -55,12 +55,12 @@ void priceGraph(const std::vector<std::vector<std::string>> &ohlcData, int mode)
 
     if (mode == 1 || mode == 3)
     {
-        matplot::plot(xAxis, openingPrices)->color("green").line_width(2).display_name("Open");
+        matplot::plot(xAxis, openingPrices)->color("blue").line_width(2).display_name("Open");
     }
 
     if (mode == 2 || mode == 3)
     {
-        matplot::plot(xAxis, closingPrices)->color("red").line_width(2).display_name("Close");
+        matplot::plot(xAxis, closingPrices)->color("black").line_width(2).display_name("Close");
     }
 
     ::matplot::legend({});
