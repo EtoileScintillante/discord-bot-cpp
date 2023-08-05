@@ -35,10 +35,11 @@ std::time_t convertToUnixTimestamp(const std::string &date);
 /// @return The HTTP response as a string.
 static std::string httpGet(const std::string &url);
 
-/// Function to fetch historical stock data from Yahoo Finance and store OHLC data (and dates) in a 2D vector.
+/// Function to fetch historical stock data from Yahoo Finance and store OHLC data (and dates and volumes) in a 2D vector.
 /// @param symbol The symbol of the stock.
 /// @param duration The duration/period in the format: 1y, 6mo, 3mo, 2mo, 1mo, 3w, 2w, or 1w.
-/// @return A 2D vector containing OHLC data (Open, High, Low, Close) for each date.
+/// @return A 2D vector where each row contains the following data: date, open, high, low, close, volume (in that order).
+/// @note Function is named fetch*OHLC*Data but this also includes dates (in format y/m/d) and volumes. 
 std::vector<std::vector<std::string>> fetchOHLCData(const std::string& symbol, const std::string& duration);
 
 /// Function to fetch the latest price of a stock from Yahoo Finance.
