@@ -123,7 +123,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
             if (std::filesystem::exists(imagePath))
             {
                 dpp::message msg;
-                msg.set_content(showV == "n" ? "Here is your candlestick chart for " + symbol : "Here are your candlestick chart and volume graph for " + symbol);
+                msg.set_content(showV == "n" ? "Here is your candlestick chart for " + symbol : "Here is your candlestick chart with volumes for " + symbol);
                 msg.add_file(showV == "n" ? "candle_chart.png" : "candle_volume_onefig.png", dpp::utility::read_file(imagePath));
                 event.reply(msg);
                 
