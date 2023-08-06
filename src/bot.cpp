@@ -33,45 +33,52 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         std::string symbol = std::get<std::string>(event.get_parameter("symbol"));
         std::string period = std::get<std::string>(event.get_parameter("period"));
         std::string mode = std::get<std::string>(event.get_parameter("mode"));
-        dpp::message msg{"Here is your graph for " + symbol};
-
-        // Use std::async to create the graph asynchronously
-        auto future = std::async(std::launch::async, [&]()
-                                 {
-                std::vector<std::vector<std::string>> ohlcData = fetchOHLCData(symbol, period);
-                priceGraph(ohlcData, std::stoi(mode)); });
-
-        // Wait for the graph creation to finish
-        future.wait();
-
-        // Additional delay to make sure the file is fully written to disk
-        std::this_thread::sleep_for(std::chrono::milliseconds{500});
-
-        const std::string imagePath = "../images/price_graph.png";
-        const int maxAttempts = 5;
-        const int timeoutMs = 1000; // 1 second
-        int attempts = 0;
-
-        // Check if the file exists, with a timeout
-        while (!std::filesystem::exists(imagePath) && attempts < maxAttempts)
+        std::vector<std::vector<std::string>> ohlcData = fetchOHLCData(symbol, period);
+        if (ohlcData.empty()) // No data, so do not try to create graph
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds{timeoutMs});
-            attempts++;
-        }
-
-        // If the file exists, add it to the message
-        if (std::filesystem::exists(imagePath))
-        {
-            msg.add_file("price_graph.png", dpp::utility::read_file(imagePath));
-            event.reply(msg);
-            // Delete the file after sending the message
-            std::filesystem::remove(imagePath);
-        }
-        else
-        {
-            // If the file doesn't exist, reply with an error message
-            dpp::message errorMsg{"Oops! Something went wrong while creating the graph."};
+            dpp::message errorMsg{"Could not fetch stock data. Symbol may be invalid."};
             event.reply(errorMsg);
+        }
+        else // Create graph
+        {
+            // Use std::async to create the graph asynchronously
+            auto future = std::async(std::launch::async, [&]()
+                                    {
+                    priceGraph(ohlcData, std::stoi(mode)); });
+
+            // Wait for the graph creation to finish
+            future.wait();
+
+            // Additional delay to make sure the file is fully written to disk
+            std::this_thread::sleep_for(std::chrono::milliseconds{500});
+
+            const std::string imagePath = "../images/price_graph.png";
+            const int maxAttempts = 5;
+            const int timeoutMs = 1000; // 1 second
+            int attempts = 0;
+
+            // Check if the file exists, with a timeout
+            while (!std::filesystem::exists(imagePath) && attempts < maxAttempts)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds{timeoutMs});
+                attempts++;
+            }
+
+            // If the file exists, add it to the message
+            if (std::filesystem::exists(imagePath))
+            {
+                dpp::message msg{"Here is your graph for " + symbol};
+                msg.add_file("price_graph.png", dpp::utility::read_file(imagePath));
+                event.reply(msg);
+                // Delete the file after sending the message
+                std::filesystem::remove(imagePath);
+            }
+            else
+            {
+                // If the file doesn't exist, reply with an error message
+                dpp::message errorMsg{"Oops! Something went wrong while creating the figure."};
+                event.reply(errorMsg);
+            }
         }
     }
     else if (event.command.get_command_name() == "candlestick")
@@ -79,73 +86,58 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         std::string symbol = std::get<std::string>(event.get_parameter("symbol"));
         std::string period = std::get<std::string>(event.get_parameter("period"));
         std::string showV = std::get<std::string>(event.get_parameter("volume"));
-
-        // Use std::async to create the graph asynchronously
-        auto future = std::async(std::launch::async, [&]()
-                                 {
-                std::vector<std::vector<std::string>> ohlcData = fetchOHLCData(symbol, period);
-                 if (showV == "n")
-                {
-                    createCandle(ohlcData);
-                }
-                else
-                {
-                    createCandleAndVolume(ohlcData);
-                }});
-
-        // Wait for the graph creation to finish
-        future.wait();
-
-        // Additional delay to make sure the file is fully written to disk
-        std::this_thread::sleep_for(std::chrono::milliseconds{500});
-
-        std::string imagePath;
-        if (showV == "n")
+        std::vector<std::vector<std::string>> ohlcData = fetchOHLCData(symbol, period);
+        if (ohlcData.empty()) // No data, so do not try to create the figure
         {
-            imagePath = "../images/candle_chart.png";
+            dpp::message errorMsg{"Could not fetch stock data. Symbol may be invalid."};
+            event.reply(errorMsg);
         }
-        else
+        else // Create figure
         {
-            imagePath = "../images/candle_volume.png";
-        }
-        const int maxAttempts = 5;
-        const int timeoutMs = 1000; // 1 second
-        int attempts = 0;
+            // Use std::async to create the graph asynchronously
+            auto future = std::async(std::launch::async, [&]()
+                                    {
+                    
+                    (showV == "n") ? createCandle(ohlcData) : createCandleAndVolume(ohlcData);
+                    });
 
-        // Check if the file exists, with a timeout
-        while (!std::filesystem::exists(imagePath) && attempts < maxAttempts)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds{timeoutMs});
-            attempts++;
-        }
+            // Wait for the graph creation to finish
+            future.wait();
 
-        // If the file exists, add it to the message
-        if (std::filesystem::exists(imagePath))
-        {
-            if (showV == "n")
+            // Additional delay to make sure the file is fully written to disk
+            std::this_thread::sleep_for(std::chrono::milliseconds{500});
+
+            std::string imagePath = (showV == "n") ? "../images/candle_chart.png" : "../images/candle_volume.png";
+            const int maxAttempts = 5;
+            const int timeoutMs = 1000; // 1 second
+            int attempts = 0;
+
+            // Check if the file exists, with a timeout
+            while (!std::filesystem::exists(imagePath) && attempts < maxAttempts)
             {
-                dpp::message msg{"Here is your candlestick chart for " + symbol};
-                msg.add_file("candle_chart.png", dpp::utility::read_file(imagePath));
+                std::this_thread::sleep_for(std::chrono::milliseconds{timeoutMs});
+                attempts++;
+            }
+
+            // If the file exists, add it to the message
+            if (std::filesystem::exists(imagePath))
+            {
+                dpp::message msg;
+                msg.set_content(showV == "n" ? "Here is your candlestick chart for " + symbol : "Here are your candlestick chart and volume graph for " + symbol);
+                msg.add_file(showV == "n" ? "candle_chart.png" : "candle_volume.png", dpp::utility::read_file(imagePath));
                 event.reply(msg);
+                
+                // Delete the file after sending the message
+                std::filesystem::remove(imagePath);
             }
             else
             {
-                dpp::message msg{"Here are your candlestick chart and volume graph for " + symbol};
-                msg.add_file("candle_volume.png", dpp::utility::read_file(imagePath));
-                event.reply(msg);
+                // If the file doesn't exist, reply with an error message
+                dpp::message errorMsg{"Oops! Something went wrong while creating the figure."};
+                event.reply(errorMsg);
             }
-            
-            // Delete the file after sending the message
-            std::filesystem::remove(imagePath);
-        }
-        else
-        {
-            // If the file doesn't exist, reply with an error message
-            dpp::message errorMsg{"Oops! Something went wrong while creating the candlestick chart (and volume graph)."};
-            event.reply(errorMsg);
         }
     }
-    // New commands here...
 }
 
 void Bot::onReady(const dpp::ready_t &event)

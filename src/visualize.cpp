@@ -2,16 +2,21 @@
 
 void priceGraph(const std::vector<std::vector<std::string>> &ohlcData, int mode)
 {
-    if (mode != 1 && mode != 2 && mode != 3)
+    if (ohlcData.empty())
     {
-        std::cout << "Invalid mode. Please use 1, 2, or 3." << std::endl;
+        std::cerr << "No price data available." << std::endl;
         return;
     }
 
-    std::vector<double> openingPrices;
-    std::vector<double> closingPrices;
+    if (mode != 1 && mode != 2 && mode != 3)
+    {
+        std::cerr << "Invalid mode. Please use 1, 2, or 3." << std::endl;
+        return;
+    }
+
+    std::vector<double> openingPrices, closingPrices;
     std::vector<std::string> dates;
-    std::vector<double> xAxis;
+    std::vector<double> xAxis; // Needed for data plotting
 
     // Extract opening and closing prices and fill xAxis vector (prices will be plotted against these points)
     double i = 0;
@@ -28,13 +33,13 @@ void priceGraph(const std::vector<std::vector<std::string>> &ohlcData, int mode)
     }
 
     // Generate evenly spaced x values
-    std::vector<double> x;
+    std::vector<double> xTicks;
     std::vector<std::string> xtickLabels; // New vector for x-tick labels
 
     if (dates.size() <= 20)
     {
         // Show all dates if the duration is less than or equal to 20 days
-        x = matplot::linspace(0, openingPrices.size() - 1, dates.size());
+        xTicks = matplot::linspace(0, openingPrices.size() - 1, dates.size());
         xtickLabels = dates; // Use all dates as x-tick labels
     }
     else
@@ -44,14 +49,14 @@ void priceGraph(const std::vector<std::vector<std::string>> &ohlcData, int mode)
         int step = static_cast<int>(std::ceil(static_cast<double>(dates.size()) / desiredTicks));
         for (int i = 0; i < dates.size(); i += step)
         {
-            x.push_back(static_cast<double>(i));
+            xTicks.push_back(static_cast<double>(i));
             xtickLabels.push_back(dates[i]); // Use selected dates as x-tick labels
         }
     }
 
     matplot::figure()->quiet_mode(true);
     matplot::hold(matplot::on);
-    matplot::xlim({-1, xAxis[xAxis.size()-1]+1}); // To make sure the line does not cross the axis
+    matplot::xlim({-1, xAxis[xAxis.size()-1]+1}); // Small offset from edges of figure, to make sure the price line(s) does not cross the axis
 
     if (mode == 1 || mode == 3)
     {
@@ -64,7 +69,7 @@ void priceGraph(const std::vector<std::vector<std::string>> &ohlcData, int mode)
     }
 
     ::matplot::legend({});
-    matplot::xticks(x);
+    matplot::xticks(xTicks);
     matplot::xticklabels(xtickLabels);
     matplot::xtickangle(35);
 
@@ -75,7 +80,7 @@ void priceGraph(const std::vector<std::vector<std::string>> &ohlcData, int mode)
     // Create the "images" folder if it doesn't exist
     std::filesystem::create_directory(imagePath);
 
-    // Save the plot as "price_graph.png" in the "images" folder
+    // Save the plot in the "images" folder
     std::string filename = imagePath + "price_graph.png";
     matplot::save(filename);
     // matplot::show();
@@ -83,13 +88,15 @@ void priceGraph(const std::vector<std::vector<std::string>> &ohlcData, int mode)
 
 void createCandle(const std::vector<std::vector<std::string>> &ohlcData)
 {
-    std::vector<std::string> dates;
-    std::vector<double> openingPrices;
-    std::vector<double> closingPrices;
-    std::vector<double> highPrices;
-    std::vector<double> lowPrices;
-    std::vector<std::string> candleColor;
-    std::vector<double> xAxis;
+    if (ohlcData.empty())
+    {
+        std::cerr << "No OHLC data available." << std::endl;
+        return;
+    }
+
+    std::vector<std::string> dates, candleColor;
+    std::vector<double> openingPrices, closingPrices, highPrices, lowPrices;
+    std::vector<double> xAxis; // Needed for data plotting
 
     // Extract OHLC data and fill xAxis vector (prices will be plotted against these points)
     double i = 0;
@@ -144,7 +151,7 @@ void createCandle(const std::vector<std::vector<std::string>> &ohlcData)
     matplot::figure()->quiet_mode(true);
     matplot::hold(matplot::on);
     matplot::ylim({+lowestPrice * 0.99, +highestPrice * 1.01});
-    matplot::xlim({-1, xAxis[xAxis.size()-1]+1}); // To make sure the first and last candle are not in the axis
+    matplot::xlim({-1, xAxis[xAxis.size()-1]+1}); // Small offset from edges of figure, to make sure the first and last candle are not drawn in the axis
 
     for (int i = 0; i < xAxis.size(); i++)
     {
@@ -174,7 +181,7 @@ void createCandle(const std::vector<std::vector<std::string>> &ohlcData)
     // Create the "images" folder if it doesn't exist
     std::filesystem::create_directory(imagePath);
 
-    // Save the plot as "price_graph.png" in the "images" folder
+    // Save the plot in the "images" folder
     std::string filename = imagePath + "candle_chart.png";
     matplot::save(filename);
     //matplot::show();
@@ -182,14 +189,15 @@ void createCandle(const std::vector<std::vector<std::string>> &ohlcData)
 
 void createCandleAndVolume(const std::vector<std::vector<std::string>> &ohlcvData)
 {
-    std::vector<std::string> dates;
-    std::vector<double> openingPrices;
-    std::vector<double> closingPrices;
-    std::vector<double> highPrices;
-    std::vector<double> lowPrices;
-    std::vector<double> volumes;
-    std::vector<std::string> candleColor;
-    std::vector<double> xAxis;
+    if (ohlcvData.empty())
+    {
+        std::cerr << "No OHLCV data available." << std::endl;
+        return;
+    }
+
+    std::vector<std::string> dates, candleColor;
+    std::vector<double> openingPrices, closingPrices, highPrices, lowPrices, volumes;
+    std::vector<double> xAxis; // Needed for data plotting
 
     // Extract OHLC data and fill xAxis vector (prices will be plotted against these points)
     double i = 0;
@@ -249,7 +257,7 @@ void createCandleAndVolume(const std::vector<std::vector<std::string>> &ohlcvDat
     auto ax1 = matplot::subplot(2, 1, 0);
     ax1->hold(matplot::on);
     ax1->ylim({+lowestPrice * 0.99, +highestPrice * 1.01});
-    ax1->xlim({-1, xAxis[xAxis.size() - 1] + 1}); // To make sure the first and last candle are not in the axis
+    ax1->xlim({-1, xAxis[xAxis.size() - 1] + 1}); // Small offset from edges of figure, to make sure the first and last candle are not drawn in the axis
     ax1->xticks(xTicks);
     ax1->xticklabels(xtickLabels);
     ax1->xtickangle(35);
@@ -307,7 +315,7 @@ void createCandleAndVolume(const std::vector<std::vector<std::string>> &ohlcvDat
     // Create the "images" folder if it doesn't exist
     std::filesystem::create_directory(imagePath);
 
-    // Save the plot as "price_graph.png" in the "images" folder
+    // Save the plot in the "images" folder
     std::string filename = imagePath + "candle_volume.png";
     matplot::save(filename);
     // matplot::show();

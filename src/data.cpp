@@ -113,6 +113,18 @@ std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, c
 
     // Fetch historical stock data using the URL
     std::string response = httpGet(url);
+    
+        // Check if response contains an error or is empty
+    if (response.find("404 Not Found: No data found, symbol may be delisted") != std::string::npos)
+    {
+        std::cerr << "Symbol not found or delisted: " << symbol << std::endl;
+        return std::vector<std::vector<std::string>>();
+    }
+    if (response.empty())
+    {
+        std::cerr << "Failed to fetch data from the server." << std::endl;
+        return std::vector<std::vector<std::string>>();
+    }
 
     // Parse the CSV response and store OHLC data in a 2D vector
     std::istringstream ss(response);
@@ -149,6 +161,18 @@ double fetchLatestStockPrice(const std::string &symbol)
                       "?period1=0&period2=9999999999&interval=1d&events=history";
 
     std::string response = httpGet(url);
+
+    // Check if response contains an error or is empty
+    if (response.find("404 Not Found: No data found, symbol may be delisted") != std::string::npos)
+    {
+        std::cerr << "Symbol not found or delisted: " << symbol << std::endl;
+        return 0;
+    }
+    if (response.empty())
+    {
+        std::cerr << "Failed to fetch data from the server." << std::endl;
+        return 0;
+    }
 
     // Split the CSV response by lines to access individual data rows
     std::istringstream ss(response);
@@ -188,6 +212,18 @@ std::string latestStockPriceAsString(const std::string &symbol)
 
     std::string response = httpGet(url);
 
+    // Check if response contains an error or is empty
+    if (response.find("404 Not Found: No data found, symbol may be delisted") != std::string::npos)
+    {
+        std::cerr << "Symbol not found or delisted: " << symbol << std::endl;
+        return "Could not fetch latest price data.";
+    }
+    if (response.empty())
+    {
+        std::cerr << "Failed to fetch data from the server." << std::endl;
+        return "Could not fetch latest price data.";
+    }
+
     // Split the CSV response by lines to access individual data rows
     std::istringstream ss(response);
     std::string line;
@@ -214,11 +250,19 @@ std::string latestStockPriceAsString(const std::string &symbol)
         std::getline(row, volume, ',');
 
         // Store the closing price and opening price from the last available date in the specified time period
-        latestPrice = std::stod(close);
-        openingPrice = std::stod(open);
+        try
+        {
+            latestPrice = std::stod(close);
+            openingPrice = std::stod(open);
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "Error converting data to double: " << e.what() << std::endl;
+            return "Could not fetch latest price data.";
+        }
     }
 
-    // Check if price data was fetched, because we cannot divide by zero
+    // Make sure openingPrice is not zero anymore (cannot divide by zero)
     if (openingPrice == 0.0)
     {
         return "Could not fetch latest price data.";
@@ -261,6 +305,18 @@ void fetchAndWriteStockData(const std::string &symbol, const std::string &durati
 
     // Fetch historical stock data using the URL
     std::string response = httpGet(url);
+
+    // Check if response contains an error or is empty
+    if (response.find("404 Not Found: No data found, symbol may be delisted") != std::string::npos)
+    {
+        std::cerr << "Symbol not found or delisted: " << symbol << std::endl;
+        return;
+    }
+    if (response.empty())
+    {
+        std::cerr << "Failed to fetch data from the server." << std::endl;
+        return;
+    }
 
     // Get the current directory where the executable is located
     std::string exePath = std::filesystem::current_path().string(); // Use std::experimental::filesystem in C++14

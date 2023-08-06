@@ -38,7 +38,7 @@ void createCandle(const std::vector<std::vector<std::string>>& ohlcData);
 /// @param ohlcvData A 2D vector containing OHLC data, where each row represents
 ///                 a data point and the columns represent: date, open, high,
 ///                 low, close and volume (in this order).
-/// @note Please note that using OHLC data of a period >=6 months may lead
+/// @note Please note that using OHLCV data of a period >=6 months may lead
 ///       to a candlestick chart and volume graph that are not clearly readable. In such cases, the candlesticks
 ///       and volume bars may appear very thin or small, making it challenging to discern the details.
 void createCandleAndVolume(const std::vector<std::vector<std::string>>& ohlcvData);
