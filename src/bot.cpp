@@ -98,7 +98,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
             auto future = std::async(std::launch::async, [&]()
                                     {
                     
-                    (showV == "n") ? createCandle(ohlcData) : createCandleAndVolume(ohlcData);
+                    (showV == "n") ? createCandle(ohlcData) : createCandleAndVolume(ohlcData, true);
                     });
 
             // Wait for the graph creation to finish
@@ -107,7 +107,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
             // Additional delay to make sure the file is fully written to disk
             std::this_thread::sleep_for(std::chrono::milliseconds{500});
 
-            std::string imagePath = (showV == "n") ? "../images/candle_chart.png" : "../images/candle_volume.png";
+            std::string imagePath = (showV == "n") ? "../images/candle_chart.png" : "../images/candle_volume_onefig.png";
             const int maxAttempts = 5;
             const int timeoutMs = 1000; // 1 second
             int attempts = 0;
@@ -124,7 +124,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
             {
                 dpp::message msg;
                 msg.set_content(showV == "n" ? "Here is your candlestick chart for " + symbol : "Here are your candlestick chart and volume graph for " + symbol);
-                msg.add_file(showV == "n" ? "candle_chart.png" : "candle_volume.png", dpp::utility::read_file(imagePath));
+                msg.add_file(showV == "n" ? "candle_chart.png" : "candle_volume_onefig.png", dpp::utility::read_file(imagePath));
                 event.reply(msg);
                 
                 // Delete the file after sending the message

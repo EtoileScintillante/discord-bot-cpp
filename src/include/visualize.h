@@ -34,14 +34,29 @@ void createCandle(const std::vector<std::vector<std::string>>& ohlcData);
 
 /// Plot OHLC and volume data and saves the candlestick chart and volume graph as candle_volume.png in the folder 'images'.
 /// This function takes OHLCV (Open-High-Low-Close-Volume) data and creates a candlestick chart and a graph with the volumes.
-/// The candlestick chart will appear above the volume graph in the image.
+/// The candlestick chart will appear above the volume graph in the image. There is also an option to plot the OHLCV data all
+/// in one figure instead of two separate ones. 
 /// @param ohlcvData A 2D vector containing OHLC data, where each row represents
-///                 a data point and the columns represent: date, open, high,
-///                 low, close and volume (in this order).
+///                  a data point and the columns represent: date, open, high,
+///                  low, close and volume (in this order).
+/// @param together When set to true, the candlesticks and volume bars will all be plotted in one figure,
+///                 else they will be in separate figures (but still in one image). In case this is set to true,
+///                 the image will be named candle_volume_onefig.png.
 /// @note Please note that using OHLCV data of a period >=6 months may lead
 ///       to a candlestick chart and volume graph that are not clearly readable. In such cases, the candlesticks
 ///       and volume bars may appear very thin or small, making it challenging to discern the details.
-void createCandleAndVolume(const std::vector<std::vector<std::string>>& ohlcvData);
+void createCandleAndVolume(const std::vector<std::vector<std::string>>& ohlcvData, bool together = false);
+
+/// Plot OHLC and volume data in one figure and saves it as candle_volume_onefig.png in the folder 'images'.
+/// This function takes OHLCV (Open-High-Low-Close-Volume) data and creates a candlestick chart with the volume bars
+/// plotted at the bottom of the chart.
+/// @param ohlcvData A 2D vector containing OHLC data, where each row represents
+///                  a data point and the columns represent: date, open, high,
+///                  low, close and volume (in this order).
+/// @note Please note that using OHLCV data of a period >=6 months may lead
+///       to a candlestick chart and volume graph that are not clearly readable. In such cases, the candlesticks
+///       and volume bars may appear very thin or small, making it challenging to discern the details.
+void createCandleAndVolumeAsOne(const std::vector<std::vector<std::string>> &ohlcvData);
 
 
 #endif // VISUALIZE_H
