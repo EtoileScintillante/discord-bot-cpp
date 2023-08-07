@@ -17,10 +17,21 @@
 // Struct with stock metrics
 struct StockMetrics
 {
-    double marketCap = 0;       // Market capitalization of the company's outstanding shares (amount of shares * price of share)
-    double dividendYield = 0;   // Dividend yield as a percentage
-    double peRatio = 0;         // Price-to-earnings ratio (P/E ratio) indicating stock valuation
-    std::string currency = "";  // Currency 
+    std::string currency = "";   // Currency
+    std::string symbol = "";     // Symbol
+    double marketCap = 0;        // Market capitalization of the company's outstanding shares (amount of shares * price of share)
+    double dividendYield = 0;    // Dividend yield as a percentage
+    double peRatio = 0;          // Price-to-earnings ratio (P/E ratio) indicating stock valuation
+    double latestPrice = 0;      // Latest price
+    double latestChange = 0;     // Latest price change in percentage (compared to open price of that day)
+    double openPrice = 0;        // Open price
+    double dayLow = 0;           // Lowest price on day
+    double dayHigh = 0;          // Highest price on day
+    double prevClose = 0;        // Previous closing price
+    double fiftyTwoWeekLow = 0;  // 52 week low (lowest price in last 52 weeks)
+    double fiftyTwoWeekHigh = 0; // 52 week high (highest price in last 52 weeks)
+    double MA_50 = 0;            // Moving Average 50 Days
+    double MA_200 = 0;           // moving Average 200 Days
 };
 
 /// Callback function to write received data to a string.
@@ -52,16 +63,9 @@ static std::string httpGet(const std::string &url);
 /// @note Function is named fetch*OHLC*Data but this also includes dates (in format y/m/d) and volumes. 
 std::vector<std::vector<std::string>> fetchOHLCData(const std::string& symbol, const std::string& duration);
 
-/// Function to fetch the latest price info of a stock from Yahoo Finance.
-/// It fetches the latest price and the percentage of change compared to the opening price.
-/// When no data is available it will return an empty map.
-/// @param symbol The symbol of the stock.
-/// @return std::map<std::string, double> with the keys "price" and "change".
-std::map<std::string, double> getLatestStockPriceInfo(const std::string &symbol);
-
 /// Function to fetch the latest price and % of change compared to the opening price of a stock from Yahoo Finance.
 /// Data will be returned in a string as follows: "The latest price of {symbol}: {latestPrice} (%change)".
-/// If something went wrong, it will return the following string: "Could not fetch latest price data. Symbol may be invalid"
+/// If something went wrong, it will return the following string: "Could not fetch latest price data. Symbol may be invalid."
 /// @param symbol The symbol of the stock.
 /// @param markdown When set to true, the formatted string contains Markdown syntax to make it more visually appealing.
 /// @return A string containing the latest price and % change information.
@@ -73,13 +77,12 @@ std::string getFormattedStockPrice(const std::string &symbol, bool markdown = fa
 /// @param duration The duration string in the format: 1y, 6mo, 3mo, 2mo, 1mo, 3w, 2w, or 1w.
 void fetchAndWriteStockData(const std::string &symbol, const std::string &duration);
 
-/// Function to fetch stock metrics from Yahoo Finance API for a single symbol
+/// Function to fetch stock metrics from Yahoo Finance API for a single symbol.
 /// @param symbol The symbol of the stock.
-/// @return stockMetrics struct containing: market cap, dividend yield (%), PE ratio and currency
+/// @return stockMetrics struct containing latest price info, dividend yield, moving averages and more.
 StockMetrics getStockMetrics(const std::string &symbol);
 
 /// Function to get stock metrics in a readable way.
-/// If something went wrong it will return the following: "Could not fetch stock data. Symbol may be invalid."
 /// @param symbol The symbol of the stock.
 /// @param markdown When set to true, the formatted string contains Markdown syntax to make it more visually appealing.
 /// @return A string with the metrics.

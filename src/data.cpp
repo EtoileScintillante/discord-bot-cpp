@@ -155,53 +155,13 @@ std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, c
     return ohlcData;
 }
 
-std::map<std::string, double> getLatestStockPriceInfo(const std::string &symbol) {
-    std::string url = "https://query1.finance.yahoo.com/v7/finance/options/" + symbol;
-
-    std::string response = httpGet(url);
-
-    rapidjson::Document data;
-    data.Parse(response.c_str());
-
-    // Check if response contains an error or is empty
-    if (response.find("{\"optionChain\":{\"result\":[],\"error\":null}}") != std::string::npos)
-    {
-        std::cerr << "Symbol not found or delisted: " << symbol << std::endl;
-        return std::map<std::string, double>{};
-    }
-    if (response.empty())
-    {
-        std::cerr << "Failed to fetch data from the server." << std::endl;
-        return std::map<std::string, double>{};
-    }
-
-    // Parse the JSON response
-    rapidjson::Document document;
-    document.Parse(response.c_str());
-
-    // Extract necessary information
-    const rapidjson::Value &quote = data["optionChain"]["result"][0]["quote"];
-    double latestPrice = quote["regularMarketPrice"].GetDouble();
-    double priceChangePercent = quote["regularMarketChangePercent"].GetDouble();
-
-    // Create a map to store the extracted data
-    std::map<std::string, double> result;
-    result["price"] = latestPrice;
-    result["change"] = priceChangePercent;
-
-    return result;
-}
-
 std::string getFormattedStockPrice(const std::string &symbol, bool markdown)
 {
-    // Get latest price info
-    std::map<std::string, double> priceInfo = getLatestStockPriceInfo(symbol);
-
     // Also fetch metrics to get the currency
     StockMetrics stockMetrics = getStockMetrics(symbol);
 
-    // Check if it actually contains data
-    if (priceInfo.empty())
+    // Check if there is a price
+    if (stockMetrics.latestPrice == 0)
     {
         return "Could not fetch latest price data. Symbol may be invalid.";
     }
@@ -210,21 +170,21 @@ std::string getFormattedStockPrice(const std::string &symbol, bool markdown)
     std::ostringstream resultStream;
     if (!markdown)
     {
-        resultStream << "The latest price of " << symbol << ": " << std::fixed << std::setprecision(2) << priceInfo["price"] << " " << stockMetrics.currency
-                 << " (" << (priceInfo["change"] >= 0 ? "+" : "") << std::fixed << std::setprecision(2) << priceInfo["change"] << "%)";
+        resultStream << "The latest price of " << symbol << ": " << std::fixed << std::setprecision(2) << stockMetrics.latestPrice << " " << stockMetrics.currency
+                 << " (" << (stockMetrics.latestChange >= 0 ? "+" : "") << std::fixed << std::setprecision(2) << stockMetrics.latestChange << "%)";
     }
     else
     {
         resultStream << "### Latest Stock Price for " << symbol << ":\n"
-                 << "`" << std::fixed << std::setprecision(2) << priceInfo["price"] << " " << stockMetrics.currency;
+                 << "`" << std::fixed << std::setprecision(2) << stockMetrics.latestPrice << " " << stockMetrics.currency;
 
-        if (priceInfo["change"] >= 0)
+        if (stockMetrics.latestChange >= 0)
         {
-            resultStream << " (+" << std::fixed << std::setprecision(2) << priceInfo["change"] << "%)`";
+            resultStream << " (+" << std::fixed << std::setprecision(2) << stockMetrics.latestChange << "%)`";
         }
         else
         {
-            resultStream << " (" << std::fixed << std::setprecision(2) << priceInfo["change"] << "%)`";
+            resultStream << " (" << std::fixed << std::setprecision(2) << stockMetrics.latestChange << "%)`";
         }
     }
 
@@ -328,20 +288,66 @@ StockMetrics getStockMetrics(const std::string &symbol)
         const rapidjson::Value &quote = optionChain["quote"];
 
         // Extract metrics from quote object
-        stockMetrics.marketCap = quote["marketCap"].GetDouble();
-
-        if (quote.HasMember("dividendYield") && quote["dividendYield"].IsNumber())
+        if (quote.HasMember("symbol") && quote["symbol"].IsString()) // symbol
+        {
+            stockMetrics.symbol = quote["symbol"].GetString(); 
+        }
+        if (quote.HasMember("currency") && quote["currency"].IsString()) // currency
+        {
+            stockMetrics.currency = quote["currency"].GetString();
+        }
+        if (quote.HasMember("marketCap") && quote["marketCap"].IsNumber()) // marketCap
+        {
+            stockMetrics.marketCap = quote["marketCap"].GetDouble();
+        }
+        if (quote.HasMember("dividendYield") && quote["dividendYield"].IsNumber()) // dividendYield
         {
             stockMetrics.dividendYield = quote["dividendYield"].GetDouble();
         }
-        else
+        if (quote.HasMember("trailingPE") && quote["trailingPE"].IsNumber()) // peRatio
         {
-            // If there is no dividendYield, default to 0.0 
-            stockMetrics.dividendYield = 0.0; 
+            stockMetrics.peRatio = quote["trailingPE"].GetDouble();
         }
-
-        stockMetrics.peRatio = quote["trailingPE"].GetDouble();
-        stockMetrics.currency = quote["currency"].GetString();
+        if (quote.HasMember("regularMarketPrice") && quote["regularMarketPrice"].IsNumber()) // latestPrice
+        {
+            stockMetrics.latestPrice = quote["regularMarketPrice"].GetDouble();
+        }
+        if (quote.HasMember("regularMarketChangePercent") && quote["regularMarketChangePercent"].IsNumber()) // latestChange
+        {
+            stockMetrics.latestChange = quote["regularMarketChangePercent"].GetDouble();
+        }
+        if (quote.HasMember("regularMarketOpen") && quote["regularMarketOpen"].IsNumber()) // openPrice
+        {
+            stockMetrics.openPrice = quote["regularMarketOpen"].GetDouble();
+        }
+        if (quote.HasMember("regularMarketLow") && quote["regularMarketLow"].IsNumber()) // dayLow
+        {
+            stockMetrics.dayLow = quote["regularMarketLow"].GetDouble();
+        }
+        if (quote.HasMember("regularMarketHigh") && quote["regularMarketHigh"].IsNumber()) // dayHigh
+        {
+            stockMetrics.dayHigh = quote["regularMarketHigh"].GetDouble();
+        }
+        if (quote.HasMember("regularMarketPreviousClose") && quote["regularMarketPreviousClose"].IsNumber()) // prevClose
+        {
+            stockMetrics.prevClose = quote["regularMarketPreviousClose"].GetDouble();
+        }
+        if (quote.HasMember("fiftyTwoWeekLow") && quote["fiftyTwoWeekLow"].IsNumber()) // fiftyTwoWeekLow
+        {
+            stockMetrics.fiftyTwoWeekLow = quote["fiftyTwoWeekLow"].GetDouble();
+        }
+        if (quote.HasMember("fiftyTwoWeekHigh") && quote["fiftyTwoWeekHigh"].IsNumber()) // fiftyTwoWeekHigh
+        {
+            stockMetrics.fiftyTwoWeekHigh = quote["fiftyTwoWeekHigh"].GetDouble();
+        }
+        if (quote.HasMember("fiftyDayAverage") && quote["fiftyDayAverage"].IsNumber()) // MA_50
+        {
+            stockMetrics.MA_50 = quote["fiftyDayAverage"].GetDouble();
+        }
+        if (quote.HasMember("twoHundredDayAverage") && quote["twoHundredDayAverage"].IsNumber()) // MA_200
+        {
+            stockMetrics.MA_200 = quote["twoHundredDayAverage"].GetDouble();
+        }
     }
     else
     {
@@ -356,12 +362,6 @@ std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
     // Fetch stock metrics for the given symbol
     StockMetrics metrics = getStockMetrics(symbol);
 
-    // Check if data is valid
-    if (metrics.marketCap == 0)
-    {
-        return "Could not fetch stock data. Symbol may be invalid.";
-    }
-
     // Create a string stream to hold the formatted metrics
     std::ostringstream formattedMetrics;
 
@@ -371,8 +371,7 @@ std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
         formattedMetrics << "Stock Metrics for " << symbol << ":\n";
         formattedMetrics << std::fixed << std::setprecision(2);
         formattedMetrics << "- Market Cap:     " << metrics.marketCap << " " << metrics.currency << "\n";
-        formattedMetrics << "- Dividend Yield: " << metrics.dividendYield << "%"
-                         << "\n";
+        formattedMetrics << "- Dividend Yield: " << metrics.dividendYield << "%" << "\n";
         formattedMetrics << "- P/E Ratio:      " << metrics.peRatio << "\n";
     }
     else
