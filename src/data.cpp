@@ -113,8 +113,8 @@ std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, c
 
     // Fetch historical stock data using the URL
     std::string response = httpGet(url);
-    
-        // Check if response contains an error or is empty
+
+    // Check if response contains an error or is empty
     if (response.find("404 Not Found: No data found, symbol may be delisted") != std::string::npos)
     {
         std::cerr << "Symbol not found or delisted: " << symbol << std::endl;
@@ -205,7 +205,7 @@ double fetchLatestStockPrice(const std::string &symbol)
     return latestPrice;
 }
 
-std::string latestStockPriceAsString(const std::string &symbol)
+std::string getFormattedStockPrice(const std::string &symbol)
 {
     std::string url = "https://query1.finance.yahoo.com/v7/finance/download/" + symbol +
                       "?period1=0&period2=9999999999&interval=1d&events=history";
@@ -216,12 +216,12 @@ std::string latestStockPriceAsString(const std::string &symbol)
     if (response.find("404 Not Found: No data found, symbol may be delisted") != std::string::npos)
     {
         std::cerr << "Symbol not found or delisted: " << symbol << std::endl;
-        return "Could not fetch latest price data.";
+        return "Could not fetch latest price data. Symbol may be invalid.";
     }
     if (response.empty())
     {
         std::cerr << "Failed to fetch data from the server." << std::endl;
-        return "Could not fetch latest price data.";
+        return "Could not fetch latest price data. Symbol may be invalid.";
     }
 
     // Split the CSV response by lines to access individual data rows
@@ -258,14 +258,14 @@ std::string latestStockPriceAsString(const std::string &symbol)
         catch (const std::exception &e)
         {
             std::cerr << "Error converting data to double: " << e.what() << std::endl;
-            return "Could not fetch latest price data.";
+            return "Could not fetch latest price data. Symbol may be invalid.";
         }
     }
 
     // Make sure openingPrice is not zero anymore (cannot divide by zero)
     if (openingPrice == 0.0)
     {
-        return "Could not fetch latest price data.";
+        return "Could not fetch latest price data. Symbol may be invalid.";
     }
 
     // Calculate the percentage change
@@ -342,4 +342,96 @@ void fetchAndWriteStockData(const std::string &symbol, const std::string &durati
     }
 
     outFile.close();
+}
+
+StockMetrics getStockMetrics(const std::string &symbol)
+{
+    StockMetrics stockMetrics;
+
+    // Construct the Yahoo Finance API URL with the symbol
+    std::string apiUrl = "https://query1.finance.yahoo.com/v7/finance/options/" + symbol;
+
+    // Fetch data from the Yahoo Finance API
+    std::string response = httpGet(apiUrl);
+
+    // Check if response contains an error or is empty
+    if (response.find("{\"optionChain\":{\"result\":[],\"error\":null}}") != std::string::npos)
+    {
+        std::cerr << "Symbol not found or delisted: " << symbol << std::endl;
+        return stockMetrics;
+    }
+    if (response.empty())
+    {
+        std::cerr << "Failed to fetch data from the server." << std::endl;
+        return stockMetrics;
+    }
+
+    // Parse the JSON response
+    rapidjson::Document document;
+    document.Parse(response.c_str());
+
+    if (!document.HasParseError() && document.HasMember("optionChain"))
+    {
+        const rapidjson::Value &optionChain = document["optionChain"]["result"][0];
+        const rapidjson::Value &quote = optionChain["quote"];
+
+        // Extract metrics from quote object
+        stockMetrics.marketCap = quote["marketCap"].GetDouble();
+
+        if (quote.HasMember("dividendYield") && quote["dividendYield"].IsNumber())
+        {
+            stockMetrics.dividendYield = quote["dividendYield"].GetDouble();
+        }
+        else
+        {
+            // If there is no dividendYield, default to 0.0 
+            stockMetrics.dividendYield = 0.0; 
+        }
+
+        stockMetrics.peRatio = quote["trailingPE"].GetDouble();
+        stockMetrics.currency = quote["currency"].GetString();
+    }
+    else
+    {
+        std::cerr << "JSON parsing error or missing member" << std::endl;
+    }
+
+    return stockMetrics;
+}
+
+std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
+{
+    // Fetch stock metrics for the given symbol
+    StockMetrics metrics = getStockMetrics(symbol);
+
+    // Check if data is valid
+    if (metrics.marketCap == 0)
+    {
+        return "Could not fetch stock data. Symbol may be invalid.";
+    }
+
+    // Create a string stream to hold the formatted metrics
+    std::ostringstream formattedMetrics;
+
+    // Format the stock metrics
+    if (!markdown)
+    {
+        formattedMetrics << "Stock Metrics for " << symbol << ":\n";
+        formattedMetrics << std::fixed << std::setprecision(2);
+        formattedMetrics << "- Market Cap:     " << metrics.marketCap << " " << metrics.currency << "\n";
+        formattedMetrics << "- Dividend Yield: " << metrics.dividendYield << "%"
+                         << "\n";
+        formattedMetrics << "- P/E Ratio:      " << metrics.peRatio << "\n";
+    }
+    else
+    {
+        formattedMetrics << "**Stock Metrics for " << symbol << ":**\n";
+        formattedMetrics << std::fixed << std::setprecision(2);
+        formattedMetrics << "- Market Cap:     `" << metrics.marketCap << " " << metrics.currency << "`\n";
+        formattedMetrics << "- Dividend Yield: `" << metrics.dividendYield << "%`\n";
+        formattedMetrics << "- P/E Ratio:      `" << metrics.peRatio << "`\n";
+    }
+
+    // Return the formatted metrics as a string
+    return formattedMetrics.str();
 }

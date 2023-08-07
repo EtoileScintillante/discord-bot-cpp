@@ -25,7 +25,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
     if (event.command.get_command_name() == "lateststockprice")
     {
         std::string symbol = std::get<std::string>(event.get_parameter("symbol"));
-        std::string priceStr = latestStockPriceAsString(symbol);
+        std::string priceStr = getFormattedStockPrice(symbol);
         event.reply(priceStr);
     }
     else if (event.command.get_command_name() == "pricegraph")
@@ -138,6 +138,12 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
             }
         }
     }
+    else if (event.command.get_command_name() == "stockmetrics")
+    {
+        std::string symbol = std::get<std::string>(event.get_parameter("symbol"));
+        std::string priceStr = getFormattedStockMetrics(symbol, true);
+        event.reply(priceStr);
+    }
 }
 
 void Bot::onReady(const dpp::ready_t &event)
@@ -156,7 +162,7 @@ void Bot::registerCommands()
         dpp::command_option(dpp::co_string, "symbol", "Stock symbol", true));
 
     // Create slash command
-    dpp::slashcommand newcommand1("pricegraph", "Get a closing and/or open price graph for a stock", bot.me.id);
+    dpp::slashcommand newcommand1("pricegraph", "Get a graph of the closing and/or open price of a stock", bot.me.id);
     newcommand1.add_option(
         dpp::command_option(dpp::co_string, "symbol", "Stock symbol", true));
     newcommand1.add_option(
@@ -176,7 +182,7 @@ void Bot::registerCommands()
         add_choice(dpp::command_option_choice("Both", std::string("3"))));
 
     // Create slash command
-    dpp::slashcommand newcommand2("candlestick", "Get a candlestick for a stock (and optionally with volumes)", bot.me.id);
+    dpp::slashcommand newcommand2("candlestick", "Get a candlestick chart for a stock (and optionally with volumes)", bot.me.id);
     newcommand2.add_option(
         dpp::command_option(dpp::co_string, "symbol", "Stock symbol", true));
     newcommand2.add_option(
@@ -192,11 +198,17 @@ void Bot::registerCommands()
         dpp::command_option(dpp::co_string, "volume", "Show volumes", true).
         add_choice(dpp::command_option_choice("Yes", std::string("y"))).
         add_choice(dpp::command_option_choice("No", std::string("n"))));
+    
+    // create slash command
+    dpp::slashcommand newcommand3("stockmetrics", "Get metrics of a stock from Yahoo Finance", bot.me.id);
+    newcommand3.add_option(
+        dpp::command_option(dpp::co_string, "symbol", "Stock symbol", true));
 
     // Add commands to vector and register them
     std::vector<dpp::slashcommand> commands;
     commands.push_back(newcommand);
     commands.push_back(newcommand1);
     commands.push_back(newcommand2);
+    commands.push_back(newcommand3);
     bot.global_bulk_command_create(commands);
 }

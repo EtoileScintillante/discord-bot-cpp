@@ -13,6 +13,15 @@
 #include <iomanip>
 #include "rapidjson/document.h"
 
+// Struct with stock metrics
+struct StockMetrics
+{
+    double marketCap = 0;       // Market capitalization of the company's outstanding shares (amount of shares * price of share)
+    double dividendYield = 0;   // Dividend yield as a percentage
+    double peRatio = 0;         // Price-to-earnings ratio (P/E ratio) indicating stock valuation
+    std::string currency = "";  // Currency 
+};
+
 /// Callback function to write received data to a string.
 /// @param ptr Pointer to the received data buffer.
 /// @param size Represents the size of each data element in the buffer (typically the size of a single character, byte).
@@ -49,15 +58,27 @@ double fetchLatestStockPrice(const std::string &symbol);
 
 /// Function to fetch the latest price and % of change compared to the opening price of a stock from Yahoo Finance.
 /// Data will be returned in a string as follows: "The latest price of {symbol}: {latestPrice} (%change)".
-/// If something went wrong, it will return the following string: "Could not fetch latest price data."
-/// @param symbol The symbol or name of the stock.
+/// If something went wrong, it will return the following string: "Could not fetch latest price data. Symbol may be invalid"
+/// @param symbol The symbol of the stock.
 /// @return A string containing the latest price and % change information.
-std::string latestStockPriceAsString(const std::string &symbol);
+std::string getFormattedStockPrice(const std::string &symbol);
 
 /// Function to fetch historical stock data from Yahoo Finance and write to a txt file.
 /// The txt file will be named {symbol}_{duration}.txt and will be saved in the "data" folder.
-/// @param symbol The symbol or name of the stock.
+/// @param symbol The symbol of the stock.
 /// @param duration The duration string in the format: 1y, 6mo, 3mo, 2mo, 1mo, 3w, 2w, or 1w.
 void fetchAndWriteStockData(const std::string &symbol, const std::string &duration);
+
+/// Function to fetch stock metrics from Yahoo Finance API for a single symbol
+/// @param symbol The symbol of the stock.
+/// @return stockMetrics struct containing: market cap, dividend yield (%), PE ratio and currency
+StockMetrics getStockMetrics(const std::string &symbol);
+
+/// Function to get stock metrics in a readable way.
+/// If something went wrong it will return the following: "Could not fetch stock data. Symbol may be invalid."
+/// @param symbol The symbol of the stock.
+/// @param markdown When set to true, the formatted string contains Markdown syntax to make it more visually appealing.
+/// @return A string with the metrics.
+std::string getFormattedStockMetrics(const std::string &symbol, bool markdown = false);
 
 #endif // DATA_H
