@@ -84,6 +84,7 @@ void fetchAndWriteStockData(const std::string &symbol, const std::string &durati
 StockMetrics fetchStockMetrics(const std::string &symbol);
 
 /// Function to get stock metrics in a readable way.
+/// When data is not available, it will return "Could not fetch data. Symbol may be invalid.".
 /// @param symbol The symbol of the stock.
 /// @param markdown When set to true, the formatted string contains Markdown syntax to make it more visually appealing.
 /// @return A string with the metrics.

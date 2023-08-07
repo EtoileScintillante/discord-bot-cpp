@@ -246,7 +246,7 @@ void fetchAndWriteStockData(const std::string &symbol, const std::string &durati
     if (outFile)
     {
         outFile << response;
-        std::cout << "Stock data for " << symbol << " in the last " << duration << " has been written to " << filename << std::endl;
+        std::cout << "Data for " << symbol << " in the last " << duration << " has been written to " << filename << std::endl;
     }
     else
     {
@@ -361,6 +361,12 @@ std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
 {
     // Fetch stock metrics for the given symbol
     StockMetrics metrics = fetchStockMetrics(symbol);
+
+    // Check if data is valid
+    if (metrics.symbol == "-")
+    {
+        return "Could not fetch data. Symbol may be invalid.";
+    }
 
     // Create a string stream to hold the formatted metrics
     std::ostringstream formattedMetrics;
