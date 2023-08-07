@@ -321,7 +321,7 @@ void createCandleAndVolume(const std::vector<std::vector<std::string>> &ohlcvDat
     std::filesystem::create_directory(imagePath);
 
     // Save the plot in the "images" folder
-    std::string filename = imagePath + "candle_volume_onefig.png";
+    std::string filename = imagePath + "candle_volume.png";
     matplot::save(filename);
     // matplot::show();
 }
