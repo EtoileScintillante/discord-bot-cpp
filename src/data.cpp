@@ -158,7 +158,7 @@ std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, c
 std::string getFormattedStockPrice(const std::string &symbol, bool markdown)
 {
     // Also fetch metrics to get the currency
-    StockMetrics stockMetrics = getStockMetrics(symbol);
+    StockMetrics stockMetrics = fetchStockMetrics(symbol);
 
     // Check if there is a price
     if (stockMetrics.latestPrice == 0)
@@ -170,12 +170,12 @@ std::string getFormattedStockPrice(const std::string &symbol, bool markdown)
     std::ostringstream resultStream;
     if (!markdown)
     {
-        resultStream << "The latest price of " << symbol << ": " << std::fixed << std::setprecision(2) << stockMetrics.latestPrice << " " << stockMetrics.currency
+        resultStream << "Latest Price for " << stockMetrics.symbol << ": " << std::fixed << std::setprecision(2) << stockMetrics.latestPrice << " " << stockMetrics.currency
                  << " (" << (stockMetrics.latestChange >= 0 ? "+" : "") << std::fixed << std::setprecision(2) << stockMetrics.latestChange << "%)";
     }
     else
     {
-        resultStream << "### Latest Stock Price for " << symbol << ":\n"
+        resultStream << "### Latest Price for " << stockMetrics.symbol << "\n"
                  << "`" << std::fixed << std::setprecision(2) << stockMetrics.latestPrice << " " << stockMetrics.currency;
 
         if (stockMetrics.latestChange >= 0)
@@ -256,7 +256,7 @@ void fetchAndWriteStockData(const std::string &symbol, const std::string &durati
     outFile.close();
 }
 
-StockMetrics getStockMetrics(const std::string &symbol)
+StockMetrics fetchStockMetrics(const std::string &symbol)
 {
     StockMetrics stockMetrics;
 
@@ -320,13 +320,13 @@ StockMetrics getStockMetrics(const std::string &symbol)
         {
             stockMetrics.openPrice = quote["regularMarketOpen"].GetDouble();
         }
-        if (quote.HasMember("regularMarketLow") && quote["regularMarketLow"].IsNumber()) // dayLow
+        if (quote.HasMember("regularMarketDayLow") && quote["regularMarketDayLow"].IsNumber()) // dayLow
         {
-            stockMetrics.dayLow = quote["regularMarketLow"].GetDouble();
+            stockMetrics.dayLow = quote["regularMarketDayLow"].GetDouble();
         }
-        if (quote.HasMember("regularMarketHigh") && quote["regularMarketHigh"].IsNumber()) // dayHigh
+        if (quote.HasMember("regularMarketDayHigh") && quote["regularMarketDayHigh"].IsNumber()) // dayHigh
         {
-            stockMetrics.dayHigh = quote["regularMarketHigh"].GetDouble();
+            stockMetrics.dayHigh = quote["regularMarketDayHigh"].GetDouble();
         }
         if (quote.HasMember("regularMarketPreviousClose") && quote["regularMarketPreviousClose"].IsNumber()) // prevClose
         {
@@ -360,7 +360,7 @@ StockMetrics getStockMetrics(const std::string &symbol)
 std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
 {
     // Fetch stock metrics for the given symbol
-    StockMetrics metrics = getStockMetrics(symbol);
+    StockMetrics metrics = fetchStockMetrics(symbol);
 
     // Create a string stream to hold the formatted metrics
     std::ostringstream formattedMetrics;
@@ -368,19 +368,37 @@ std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
     // Format the stock metrics
     if (!markdown)
     {
-        formattedMetrics << "Stock Metrics for " << symbol << ":\n";
+        formattedMetrics << "Metrics for " << metrics.symbol << ":\n";
         formattedMetrics << std::fixed << std::setprecision(2);
-        formattedMetrics << "- Market Cap:     " << metrics.marketCap << " " << metrics.currency << "\n";
-        formattedMetrics << "- Dividend Yield: " << metrics.dividendYield << "%" << "\n";
-        formattedMetrics << "- P/E Ratio:      " << metrics.peRatio << "\n";
+        formattedMetrics << "- Market Cap:         " << metrics.marketCap << " " << metrics.currency << "\n";
+        formattedMetrics << "- Dividend Yield:     " << metrics.dividendYield << "%" << "\n";
+        formattedMetrics << "- P/E Ratio:          " << metrics.peRatio << "\n";
+        formattedMetrics << "- Latest Price:       " << metrics.latestPrice << " " << metrics.currency << "\n";
+        formattedMetrics << "- Open price:         " << metrics.openPrice << " " << metrics.currency << "\n";
+        formattedMetrics << "- Day Low:            " << metrics.dayLow << " " << metrics.currency << "\n";
+        formattedMetrics << "- Day High:           " << metrics.dayHigh << " " << metrics.currency << "\n";
+        formattedMetrics << "- Previous Close:     " << metrics.prevClose << " " << metrics.currency << "\n";
+        formattedMetrics << "- 52 Week Low:        " << metrics.fiftyTwoWeekLow << " " << metrics.currency << "\n";
+        formattedMetrics << "- 52 Week High:       " << metrics.fiftyTwoWeekHigh << " " << metrics.currency << "\n";
+        formattedMetrics << "- MA50:               " << metrics.MA_50 << " " << metrics.currency << "\n";
+        formattedMetrics << "- MA200:              " << metrics.MA_200 << " " << metrics.currency << "\n";
     }
-    else
+    else // It looks weird but this way in Discord the spaces between the names and values are even
     {
-        formattedMetrics << "**Stock Metrics for " << symbol << ":**\n";
+        formattedMetrics << "### Metrics for " << metrics.symbol << "\n";
         formattedMetrics << std::fixed << std::setprecision(2);
-        formattedMetrics << "- Market Cap:     `" << metrics.marketCap << " " << metrics.currency << "`\n";
-        formattedMetrics << "- Dividend Yield: `" << metrics.dividendYield << "%`\n";
-        formattedMetrics << "- P/E Ratio:      `" << metrics.peRatio << "`\n";
+        formattedMetrics << "- Market Cap:          `" << metrics.marketCap << " " << metrics.currency << "`\n";
+        formattedMetrics << "- Dividend Yield:     `" << metrics.dividendYield << "%`\n";
+        formattedMetrics << "- P/E Ratio:              `" << metrics.peRatio << "`\n";
+        formattedMetrics << "- Latest Price:         `" << metrics.latestPrice << " " << metrics.currency << "`\n";
+        formattedMetrics << "- Open price:           `" << metrics.openPrice << " " << metrics.currency << "`\n";
+        formattedMetrics << "- Day Low:                `" << metrics.dayLow << " " << metrics.currency << "`\n";
+        formattedMetrics << "- Day High:               `" << metrics.dayHigh << " " << metrics.currency << "`\n";
+        formattedMetrics << "- Previous Close:    `" << metrics.prevClose << " " << metrics.currency << "`\n";
+        formattedMetrics << "- 52 Week Low:       `" << metrics.fiftyTwoWeekLow << " " << metrics.currency << "`\n";
+        formattedMetrics << "- 52 Week High:      `" << metrics.fiftyTwoWeekHigh << " " << metrics.currency << "`\n";
+        formattedMetrics << "- MA50:                    `" << metrics.MA_50 << " " << metrics.currency << "`\n";
+        formattedMetrics << "- MA200:                 `" << metrics.MA_200 << " " << metrics.currency << "`\n";
     }
 
     // Return the formatted metrics as a string

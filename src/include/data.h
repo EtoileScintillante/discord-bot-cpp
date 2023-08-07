@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <cctype>
 #include <sstream>
 #include <fstream>
 #include <iomanip>
@@ -17,8 +18,8 @@
 // Struct with stock metrics
 struct StockMetrics
 {
-    std::string currency = "";   // Currency
-    std::string symbol = "";     // Symbol
+    std::string currency = "-";  // Currency
+    std::string symbol = "-";    // Symbol
     double marketCap = 0;        // Market capitalization of the company's outstanding shares (amount of shares * price of share)
     double dividendYield = 0;    // Dividend yield as a percentage
     double peRatio = 0;          // Price-to-earnings ratio (P/E ratio) indicating stock valuation
@@ -79,8 +80,8 @@ void fetchAndWriteStockData(const std::string &symbol, const std::string &durati
 
 /// Function to fetch stock metrics from Yahoo Finance API for a single symbol.
 /// @param symbol The symbol of the stock.
-/// @return stockMetrics struct containing latest price info, dividend yield, moving averages and more.
-StockMetrics getStockMetrics(const std::string &symbol);
+/// @return StockMetrics struct containing latest price info, dividend yield, moving averages and more.
+StockMetrics fetchStockMetrics(const std::string &symbol);
 
 /// Function to get stock metrics in a readable way.
 /// @param symbol The symbol of the stock.
