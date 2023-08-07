@@ -157,8 +157,17 @@ std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, c
 
 double fetchLatestStockPrice(const std::string &symbol)
 {
+    // Will only download data from the past week
+    std::time_t endTime = std::time(nullptr);
+    std::time_t startTime = endTime - getDurationInSeconds("1w");
+
+    std::ostringstream startTimeStr, endTimeStr;
+    startTimeStr << startTime;
+    endTimeStr << endTime;
+
     std::string url = "https://query1.finance.yahoo.com/v7/finance/download/" + symbol +
-                      "?period1=0&period2=9999999999&interval=1d&events=history";
+                      "?period1=" + startTimeStr.str() + "&period2=" + endTimeStr.str() +
+                      "&interval=1d&events=history";
 
     std::string response = httpGet(url);
 
@@ -207,8 +216,17 @@ double fetchLatestStockPrice(const std::string &symbol)
 
 std::string getFormattedStockPrice(const std::string &symbol, bool markdown)
 {
+    // Will only download data from the past week
+    std::time_t endTime = std::time(nullptr);
+    std::time_t startTime = endTime - getDurationInSeconds("1w");
+
+    std::ostringstream startTimeStr, endTimeStr;
+    startTimeStr << startTime;
+    endTimeStr << endTime;
+
     std::string url = "https://query1.finance.yahoo.com/v7/finance/download/" + symbol +
-                      "?period1=0&period2=9999999999&interval=1d&events=history";
+                      "?period1=" + startTimeStr.str() + "&period2=" + endTimeStr.str() +
+                      "&interval=1d&events=history";
 
     std::string response = httpGet(url);
 
