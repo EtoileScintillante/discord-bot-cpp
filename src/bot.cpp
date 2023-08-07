@@ -25,7 +25,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
     if (event.command.get_command_name() == "lateststockprice")
     {
         std::string symbol = std::get<std::string>(event.get_parameter("symbol"));
-        std::string priceStr = getFormattedStockPrice(symbol);
+        std::string priceStr = getFormattedStockPrice(symbol, true);
         event.reply(priceStr);
     }
     else if (event.command.get_command_name() == "pricegraph")

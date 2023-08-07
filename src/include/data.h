@@ -60,8 +60,9 @@ double fetchLatestStockPrice(const std::string &symbol);
 /// Data will be returned in a string as follows: "The latest price of {symbol}: {latestPrice} (%change)".
 /// If something went wrong, it will return the following string: "Could not fetch latest price data. Symbol may be invalid"
 /// @param symbol The symbol of the stock.
+/// @param markdown When set to true, the formatted string contains Markdown syntax to make it more visually appealing.
 /// @return A string containing the latest price and % change information.
-std::string getFormattedStockPrice(const std::string &symbol);
+std::string getFormattedStockPrice(const std::string &symbol, bool markdown = false);
 
 /// Function to fetch historical stock data from Yahoo Finance and write to a txt file.
 /// The txt file will be named {symbol}_{duration}.txt and will be saved in the "data" folder.

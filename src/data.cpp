@@ -205,7 +205,7 @@ double fetchLatestStockPrice(const std::string &symbol)
     return latestPrice;
 }
 
-std::string getFormattedStockPrice(const std::string &symbol)
+std::string getFormattedStockPrice(const std::string &symbol, bool markdown)
 {
     std::string url = "https://query1.finance.yahoo.com/v7/finance/download/" + symbol +
                       "?period1=0&period2=9999999999&interval=1d&events=history";
@@ -273,8 +273,26 @@ std::string getFormattedStockPrice(const std::string &symbol)
 
     // Create the formatted string with the result
     std::ostringstream resultStream;
-    resultStream << "The latest price of " << symbol << ": " << std::fixed << std::setprecision(2) << latestPrice
+    if (!markdown)
+    {
+        resultStream << "The latest price of " << symbol << ": " << std::fixed << std::setprecision(2) << latestPrice
                  << " (" << (percentageChange >= 0 ? "+" : "") << std::fixed << std::setprecision(2) << percentageChange << "%)";
+    }
+    else
+    {
+        resultStream << "### Latest Stock Price for " << symbol << ":\n"
+                 << "`" << std::fixed << std::setprecision(2) << latestPrice;
+
+        if (percentageChange >= 0)
+        {
+            resultStream << " (+" << std::fixed << std::setprecision(2) << percentageChange << "%)`";
+        }
+        else
+        {
+            resultStream << " (" << std::fixed << std::setprecision(2) << percentageChange << "%)`";
+        }
+    }
+    
 
     return resultStream.str();
 }
