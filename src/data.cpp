@@ -155,162 +155,78 @@ std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, c
     return ohlcData;
 }
 
-double fetchLatestStockPrice(const std::string &symbol)
-{
-    // Will only download data from the past week
-    std::time_t endTime = std::time(nullptr);
-    std::time_t startTime = endTime - getDurationInSeconds("1w");
-
-    std::ostringstream startTimeStr, endTimeStr;
-    startTimeStr << startTime;
-    endTimeStr << endTime;
-
-    std::string url = "https://query1.finance.yahoo.com/v7/finance/download/" + symbol +
-                      "?period1=" + startTimeStr.str() + "&period2=" + endTimeStr.str() +
-                      "&interval=1d&events=history";
+std::map<std::string, double> getLatestStockPriceInfo(const std::string &symbol) {
+    std::string url = "https://query1.finance.yahoo.com/v7/finance/options/" + symbol;
 
     std::string response = httpGet(url);
 
+    rapidjson::Document data;
+    data.Parse(response.c_str());
+
     // Check if response contains an error or is empty
-    if (response.find("404 Not Found: No data found, symbol may be delisted") != std::string::npos)
+    if (response.find("{\"optionChain\":{\"result\":[],\"error\":null}}") != std::string::npos)
     {
         std::cerr << "Symbol not found or delisted: " << symbol << std::endl;
-        return 0;
+        return std::map<std::string, double>{};
     }
     if (response.empty())
     {
         std::cerr << "Failed to fetch data from the server." << std::endl;
-        return 0;
+        return std::map<std::string, double>{};
     }
 
-    // Split the CSV response by lines to access individual data rows
-    std::istringstream ss(response);
-    std::string line;
-    double latestPrice = 0.0; // Initialize with 0 in case no data is available
+    // Parse the JSON response
+    rapidjson::Document document;
+    document.Parse(response.c_str());
 
-    // Iterate through the data rows and extract the closing price from the last row
-    while (std::getline(ss, line))
-    {
-        // Skip the CSV header row
-        if (line.find("Date,Open,High,Low,Close,Adj Close,Volume") != std::string::npos)
-            continue;
+    // Extract necessary information
+    const rapidjson::Value &quote = data["optionChain"]["result"][0]["quote"];
+    double latestPrice = quote["regularMarketPrice"].GetDouble();
+    double priceChangePercent = quote["regularMarketChangePercent"].GetDouble();
 
-        std::istringstream row(line);
-        std::string date, open, high, low, close, adjClose, volume;
+    // Create a map to store the extracted data
+    std::map<std::string, double> result;
+    result["price"] = latestPrice;
+    result["change"] = priceChangePercent;
 
-        // Extract data from the CSV row
-        std::getline(row, date, ',');
-        std::getline(row, open, ',');
-        std::getline(row, high, ',');
-        std::getline(row, low, ',');
-        std::getline(row, close, ',');
-        std::getline(row, adjClose, ',');
-        std::getline(row, volume, ',');
-
-        // Store the closing price from the last available date in the specified time period
-        latestPrice = std::stod(close);
-    }
-
-    return latestPrice;
+    return result;
 }
 
 std::string getFormattedStockPrice(const std::string &symbol, bool markdown)
 {
-    // Will only download data from the past week
-    std::time_t endTime = std::time(nullptr);
-    std::time_t startTime = endTime - getDurationInSeconds("1w");
+    // Get latest price info
+    std::map<std::string, double> priceInfo = getLatestStockPriceInfo(symbol);
 
-    std::ostringstream startTimeStr, endTimeStr;
-    startTimeStr << startTime;
-    endTimeStr << endTime;
+    // Also fetch metrics to get the currency
+    StockMetrics stockMetrics = getStockMetrics(symbol);
 
-    std::string url = "https://query1.finance.yahoo.com/v7/finance/download/" + symbol +
-                      "?period1=" + startTimeStr.str() + "&period2=" + endTimeStr.str() +
-                      "&interval=1d&events=history";
-
-    std::string response = httpGet(url);
-
-    // Check if response contains an error or is empty
-    if (response.find("404 Not Found: No data found, symbol may be delisted") != std::string::npos)
-    {
-        std::cerr << "Symbol not found or delisted: " << symbol << std::endl;
-        return "Could not fetch latest price data. Symbol may be invalid.";
-    }
-    if (response.empty())
-    {
-        std::cerr << "Failed to fetch data from the server." << std::endl;
-        return "Could not fetch latest price data. Symbol may be invalid.";
-    }
-
-    // Split the CSV response by lines to access individual data rows
-    std::istringstream ss(response);
-    std::string line;
-    double latestPrice = 0.0;  // Initialize with 0 in case no data is available
-    double openingPrice = 0.0; // Initialize with 0 in case no data is available
-
-    // Iterate through the data rows and extract the closing price from the last row
-    while (std::getline(ss, line))
-    {
-        // Skip the CSV header row
-        if (line.find("Date,Open,High,Low,Close,Adj Close,Volume") != std::string::npos)
-            continue;
-
-        std::istringstream row(line);
-        std::string date, open, high, low, close, adjClose, volume;
-
-        // Extract data from the CSV row
-        std::getline(row, date, ',');
-        std::getline(row, open, ',');
-        std::getline(row, high, ',');
-        std::getline(row, low, ',');
-        std::getline(row, close, ',');
-        std::getline(row, adjClose, ',');
-        std::getline(row, volume, ',');
-
-        // Store the closing price and opening price from the last available date in the specified time period
-        try
-        {
-            latestPrice = std::stod(close);
-            openingPrice = std::stod(open);
-        }
-        catch (const std::exception &e)
-        {
-            std::cerr << "Error converting data to double: " << e.what() << std::endl;
-            return "Could not fetch latest price data. Symbol may be invalid.";
-        }
-    }
-
-    // Make sure openingPrice is not zero anymore (cannot divide by zero)
-    if (openingPrice == 0.0)
+    // Check if it actually contains data
+    if (priceInfo.empty())
     {
         return "Could not fetch latest price data. Symbol may be invalid.";
     }
-
-    // Calculate the percentage change
-    double percentageChange = ((latestPrice - openingPrice) / openingPrice) * 100.0;
 
     // Create the formatted string with the result
     std::ostringstream resultStream;
     if (!markdown)
     {
-        resultStream << "The latest price of " << symbol << ": " << std::fixed << std::setprecision(2) << latestPrice
-                 << " (" << (percentageChange >= 0 ? "+" : "") << std::fixed << std::setprecision(2) << percentageChange << "%)";
+        resultStream << "The latest price of " << symbol << ": " << std::fixed << std::setprecision(2) << priceInfo["price"] << " " << stockMetrics.currency
+                 << " (" << (priceInfo["change"] >= 0 ? "+" : "") << std::fixed << std::setprecision(2) << priceInfo["change"] << "%)";
     }
     else
     {
         resultStream << "### Latest Stock Price for " << symbol << ":\n"
-                 << "`" << std::fixed << std::setprecision(2) << latestPrice;
+                 << "`" << std::fixed << std::setprecision(2) << priceInfo["price"] << " " << stockMetrics.currency;
 
-        if (percentageChange >= 0)
+        if (priceInfo["change"] >= 0)
         {
-            resultStream << " (+" << std::fixed << std::setprecision(2) << percentageChange << "%)`";
+            resultStream << " (+" << std::fixed << std::setprecision(2) << priceInfo["change"] << "%)`";
         }
         else
         {
-            resultStream << " (" << std::fixed << std::setprecision(2) << percentageChange << "%)`";
+            resultStream << " (" << std::fixed << std::setprecision(2) << priceInfo["change"] << "%)`";
         }
     }
-    
 
     return resultStream.str();
 }

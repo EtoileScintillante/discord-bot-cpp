@@ -10,6 +10,7 @@
 #include <ctime>
 #include <chrono>
 #include <vector>
+#include <map>
 #include <iomanip>
 #include "rapidjson/document.h"
 
@@ -51,10 +52,12 @@ static std::string httpGet(const std::string &url);
 /// @note Function is named fetch*OHLC*Data but this also includes dates (in format y/m/d) and volumes. 
 std::vector<std::vector<std::string>> fetchOHLCData(const std::string& symbol, const std::string& duration);
 
-/// Function to fetch the latest price of a stock from Yahoo Finance.
+/// Function to fetch the latest price info of a stock from Yahoo Finance.
+/// It fetches the latest price and the percentage of change compared to the opening price.
+/// When no data is available it will return an empty map.
 /// @param symbol The symbol of the stock.
-/// @return The latest price as a double.
-double fetchLatestStockPrice(const std::string &symbol);
+/// @return std::map<std::string, double> with the keys "price" and "change".
+std::map<std::string, double> getLatestStockPriceInfo(const std::string &symbol);
 
 /// Function to fetch the latest price and % of change compared to the opening price of a stock from Yahoo Finance.
 /// Data will be returned in a string as follows: "The latest price of {symbol}: {latestPrice} (%change)".
