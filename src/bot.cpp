@@ -22,7 +22,7 @@ void Bot::setupBot()
 
 void Bot::commandHandler(const dpp::slashcommand_t &event)
 {
-    if (event.command.get_command_name() == "lateststockprice")
+    if (event.command.get_command_name() == "latestprice")
     {
         std::string symbol = std::get<std::string>(event.get_parameter("symbol"));
         std::string priceStr = getFormattedStockPrice(symbol, true);
@@ -67,9 +67,15 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
             // If the file exists, add it to the message
             if (std::filesystem::exists(imagePath))
             {
-                dpp::message msg{"Here is your graph for " + symbol};
+                // Convert to all caps because that looks better
+                for (char &c : symbol) 
+                {
+                    c = std::toupper(c);
+                }
+                dpp::message msg{"### Price Graph for " + symbol};
                 msg.add_file("price_graph.png", dpp::utility::read_file(imagePath));
                 event.reply(msg);
+                
                 // Delete the file after sending the message
                 std::filesystem::remove(imagePath);
             }
@@ -122,8 +128,12 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
             // If the file exists, add it to the message
             if (std::filesystem::exists(imagePath))
             {
-                dpp::message msg;
-                msg.set_content(showV == "n" ? "Here is your candlestick chart for " + symbol : "Here is your candlestick chart with volumes for " + symbol);
+                // Convert to all caps because that looks better
+                for (char &c : symbol) 
+                {
+                    c = std::toupper(c);
+                }
+                dpp::message msg{"### Candlestick Chart for " + symbol};
                 msg.add_file(showV == "n" ? "candle_chart.png" : "candle_volume.png", dpp::utility::read_file(imagePath));
                 event.reply(msg);
                 
@@ -141,8 +151,8 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
     else if (event.command.get_command_name() == "stockmetrics")
     {
         std::string symbol = std::get<std::string>(event.get_parameter("symbol"));
-        std::string priceStr = getFormattedStockMetrics(symbol, true);
-        event.reply(priceStr);
+        std::string metrics = getFormattedStockMetrics(symbol, true);
+        event.reply(metrics);
     }
 }
 
@@ -157,7 +167,7 @@ void Bot::onReady(const dpp::ready_t &event)
 void Bot::registerCommands()
 {
     // create slash command
-    dpp::slashcommand newcommand("lateststockprice", "Get the latest price of a stock from Yahoo Finance", bot.me.id);
+    dpp::slashcommand newcommand("latestprice", "Get the latest price of a stock from Yahoo Finance", bot.me.id);
     newcommand.add_option(
         dpp::command_option(dpp::co_string, "symbol", "Stock symbol", true));
 
