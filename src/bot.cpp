@@ -98,7 +98,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
             auto future = std::async(std::launch::async, [&]()
                                     {
                     
-                    (showV == "n") ? createCandle(ohlcData) : createCandleAndVolume(ohlcData, true);
+                    (showV == "n") ? createCandle(ohlcData) : createCandleAndVolume(ohlcData);
                     });
 
             // Wait for the graph creation to finish
@@ -107,7 +107,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
             // Additional delay to make sure the file is fully written to disk
             std::this_thread::sleep_for(std::chrono::milliseconds{500});
 
-            std::string imagePath = (showV == "n") ? "../images/candle_chart.png" : "../images/candle_volume_onefig.png";
+            std::string imagePath = (showV == "n") ? "../images/candle_chart.png" : "../images/candle_volume.png";
             const int maxAttempts = 5;
             const int timeoutMs = 1000; // 1 second
             int attempts = 0;
@@ -124,7 +124,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
             {
                 dpp::message msg;
                 msg.set_content(showV == "n" ? "Here is your candlestick chart for " + symbol : "Here is your candlestick chart with volumes for " + symbol);
-                msg.add_file(showV == "n" ? "candle_chart.png" : "candle_volume_onefig.png", dpp::utility::read_file(imagePath));
+                msg.add_file(showV == "n" ? "candle_chart.png" : "candle_volume.png", dpp::utility::read_file(imagePath));
                 event.reply(msg);
                 
                 // Delete the file after sending the message
@@ -176,7 +176,7 @@ void Bot::registerCommands()
         add_choice(dpp::command_option_choice("Both", std::string("3"))));
 
     // Create slash command
-    dpp::slashcommand newcommand2("candlestick", "Get a candlestick for a stock (and optionally with volume graph)", bot.me.id);
+    dpp::slashcommand newcommand2("candlestick", "Get a candlestick for a stock (and optionally with volumes)", bot.me.id);
     newcommand2.add_option(
         dpp::command_option(dpp::co_string, "symbol", "Stock symbol", true));
     newcommand2.add_option(
@@ -189,7 +189,7 @@ void Bot::registerCommands()
         add_choice(dpp::command_option_choice("2 weeks", std::string("2w"))).
         add_choice(dpp::command_option_choice("1 week", std::string("1w"))));
     newcommand2.add_option(
-        dpp::command_option(dpp::co_string, "volume", "Show volumes (creates additional graph with volume data)", true).
+        dpp::command_option(dpp::co_string, "volume", "Show volumes", true).
         add_choice(dpp::command_option_choice("Yes", std::string("y"))).
         add_choice(dpp::command_option_choice("No", std::string("n"))));
 
