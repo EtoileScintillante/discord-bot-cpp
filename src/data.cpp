@@ -170,21 +170,21 @@ std::string getFormattedStockPrice(const std::string &symbol, bool markdown)
     std::ostringstream resultStream;
     if (!markdown)
     {
-        resultStream << "Latest Price for " << stockMetrics.symbol << ": " << std::fixed << std::setprecision(2) << stockMetrics.latestPrice << " " << stockMetrics.currency
+        resultStream << "Latest Price for " << stockMetrics.name << ": " << std::fixed << std::setprecision(2) << stockMetrics.latestPrice << " " << stockMetrics.currency
                  << " (" << (stockMetrics.latestChange >= 0 ? "+" : "") << std::fixed << std::setprecision(2) << stockMetrics.latestChange << "%)";
     }
     else
     {
-        resultStream << "### Latest Price for " << stockMetrics.symbol << "\n"
+        resultStream << "### Latest Price for " << stockMetrics.name << "\n"
                  << "`" << std::fixed << std::setprecision(2) << stockMetrics.latestPrice << " " << stockMetrics.currency;
 
         if (stockMetrics.latestChange >= 0)
         {
-            resultStream << " (+" << std::fixed << std::setprecision(2) << stockMetrics.latestChange << "%)`";
+            resultStream << " (+" << std::fixed << std::setprecision(2) << stockMetrics.latestChange << "%)`:chart_with_upwards_trend:";
         }
         else
         {
-            resultStream << " (" << std::fixed << std::setprecision(2) << stockMetrics.latestChange << "%)`";
+            resultStream << " (" << std::fixed << std::setprecision(2) << stockMetrics.latestChange << "%)`:chart_with_downwards_trend:";
         }
     }
 
@@ -288,6 +288,14 @@ StockMetrics fetchStockMetrics(const std::string &symbol)
         const rapidjson::Value &quote = optionChain["quote"];
 
         // Extract metrics from quote object
+        if (quote.HasMember("displayName") && quote["displayName"].IsString()) // name from displayName
+        {
+            stockMetrics.name = quote["displayName"].GetString();
+        }
+        else if ((quote.HasMember("shortName") && quote["shortName"].IsString())) // name from shortName
+        {
+            stockMetrics.name = quote["shortName"].GetString();     
+        }
         if (quote.HasMember("symbol") && quote["symbol"].IsString()) // symbol
         {
             stockMetrics.symbol = quote["symbol"].GetString(); 
@@ -374,7 +382,7 @@ std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
     // Format the stock metrics
     if (!markdown)
     {
-        formattedMetrics << "Metrics for " << metrics.symbol << ":\n";
+        formattedMetrics << "Metrics for " << metrics.name << ":\n";
         formattedMetrics << std::fixed << std::setprecision(2);
         formattedMetrics << "- Market Cap:         " << metrics.marketCap << " " << metrics.currency << "\n";
         formattedMetrics << "- Dividend Yield:     " << metrics.dividendYield << "%" << "\n";
@@ -391,7 +399,7 @@ std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
     }
     else // It looks weird but this way in Discord the spaces between the names and values are even
     {
-        formattedMetrics << "### Metrics for " << metrics.symbol << "\n";
+        formattedMetrics << "### Metrics for " << metrics.name << "\n";
         formattedMetrics << std::fixed << std::setprecision(2);
         formattedMetrics << "- Market Cap:          `" << metrics.marketCap << " " << metrics.currency << "`\n";
         formattedMetrics << "- Dividend Yield:     `" << metrics.dividendYield << "%`\n";
@@ -409,4 +417,99 @@ std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
 
     // Return the formatted metrics as a string
     return formattedMetrics.str();
+}
+
+std::string getFormattedMajorIndices(bool markdown)
+{
+    // Symbols
+    std::vector<std::string> indicesSymbols = {
+        "^GSPC", "^DJI", "^IXIC", "^FTSE", "^GDAXI",
+        "^N225", "^HSI", "000001.SS", "^FCHI", "^AXJO"
+    };
+
+    // Names
+    std::vector<std::string> indicesNames = {
+        "S&P 500", "Dow Jones Industrial Average", "NASDAQ Composite", "FTSE 100", "DAX PERFORMANCE-INDEX",
+        "Nikkei 225", "HANG SENG INDEX", "SSE Composite Index", "CAC 40", "S&P/ASX 200"
+    };
+
+    // Short descriptions
+    std::vector<std::string> indicesDescriptions = {
+        "Represents the performance of the 500 largest publicly traded companies in the US.",
+        "Tracks the performance of 30 large, publicly owned companies in the US.",
+        "Measures the performance of all companies listed on the NASDAQ stock exchange.",
+        "Represents the top 100 companies by market capitalization on the London Stock Exchange.",
+        "Measures the performance of the 30 largest companies on the Frankfurt Stock Exchange.",
+        "Represents the 225 most actively traded companies on the Tokyo Stock Exchange.",
+        "Tracks the performance of the largest and most liquid companies listed in Hong Kong.",
+        "Reflects the performance of all stocks listed on the Shanghai Stock Exchange.",
+        "Represents the top 40 companies by market capitalization on Euronext Paris.",
+        "Measures the performance of the 200 largest companies listed on the Australian Securities Exchange."
+    };
+
+    std::ostringstream formattedString;
+
+    for (int i = 0; i < indicesSymbols.size(); i++)
+    {
+        // First fetch price data
+        std::vector<std::vector<std::string>> data = fetchOHLCData(indicesSymbols[i], "1w");
+
+        // Check if data exists
+        if (!data.empty())
+        {
+            double latestPrice, openPrice, change;
+            // Retrieve latest price and open price (column 4 in row 4)
+            try 
+            {
+                // Access the last row to get the most recent data
+                latestPrice = std::stod(data[data.size()-1][4]);
+                openPrice = std::stod(data[data.size()-1][1]);
+
+                // Calculate % of change
+                if (openPrice != 0)
+                {
+                    change = ((latestPrice - openPrice) / openPrice) * 100.0;
+                }
+            }
+            catch (const std::exception& e) {
+                std::cerr << "An error occurred: " << e.what() << std::endl;
+                latestPrice = openPrice = change = 0; // Set everything to zero in case of an error
+            }
+
+            // Now create string
+            if (!markdown)
+            {
+                formattedString << indicesNames[i] << std::endl;
+                formattedString << indicesDescriptions[i] << std::endl;
+                formattedString << std::fixed << std::setprecision(2);
+                formattedString << "- Latest price: " << latestPrice;
+                if (change >= 0)
+                    {
+                        formattedString << " (+" << change << "%)\n";
+                    }
+                else
+                {
+                    formattedString << " (" << change << "%)\n";
+                }
+            }
+            else
+            {
+                formattedString << "### " << indicesNames[i] << std::endl;
+                formattedString << indicesDescriptions[i] << std::endl;
+                formattedString << std::fixed << std::setprecision(2);
+                formattedString << "- Latest price: `" << latestPrice;
+                if (change >= 0)
+                    {
+                        formattedString << " (+" << change << "%)`:chart_with_upwards_trend:\n";
+                    }
+                else
+                {
+                    formattedString << " (" << change << "%)`:chart_with_downwards_trend:\n";
+                }
+            }
+            
+        }
+    }
+
+    return formattedString.str();
 }

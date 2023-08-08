@@ -36,7 +36,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         std::vector<std::vector<std::string>> ohlcData = fetchOHLCData(symbol, period);
         if (ohlcData.empty()) // No data, so do not try to create graph
         {
-            dpp::message errorMsg{"Could not fetch stock data. Symbol may be invalid."};
+            dpp::message errorMsg{"Could not fetch data. Symbol may be invalid."};
             event.reply(errorMsg);
         }
         else // Create graph
@@ -95,7 +95,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         std::vector<std::vector<std::string>> ohlcData = fetchOHLCData(symbol, period);
         if (ohlcData.empty()) // No data, so do not try to create the figure
         {
-            dpp::message errorMsg{"Could not fetch stock data. Symbol may be invalid."};
+            dpp::message errorMsg{"Could not fetch data. Symbol may be invalid."};
             event.reply(errorMsg);
         }
         else // Create figure
@@ -154,6 +154,11 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         std::string metrics = getFormattedStockMetrics(symbol, true);
         event.reply(metrics);
     }
+    else if (event.command.get_command_name() == "majorindices")
+    {
+        std::string info = getFormattedMajorIndices(true);
+        event.reply(info);
+    }
 }
 
 void Bot::onReady(const dpp::ready_t &event)
@@ -166,7 +171,7 @@ void Bot::onReady(const dpp::ready_t &event)
 
 void Bot::registerCommands()
 {
-    // create slash command
+    // Create slash command
     dpp::slashcommand newcommand("latestprice", "Get the latest price of a stock from Yahoo Finance", bot.me.id);
     newcommand.add_option(
         dpp::command_option(dpp::co_string, "symbol", "Stock symbol", true));
@@ -209,9 +214,12 @@ void Bot::registerCommands()
         add_choice(dpp::command_option_choice("Yes", std::string("y"))).
         add_choice(dpp::command_option_choice("No", std::string("n"))));
     
-    // create slash command
-    dpp::slashcommand newcommand3("stockmetrics", "Get metrics of a stock from Yahoo Finance", bot.me.id);
-    newcommand3.add_option(
+    // Create slash command
+    dpp::slashcommand newcommand3("majorindices", "Get latest price info for 10 major indices", bot.me.id);
+    
+    // Create slash command
+    dpp::slashcommand newcommand4("stockmetrics", "Get metrics of a stock from Yahoo Finance", bot.me.id);
+    newcommand4.add_option(
         dpp::command_option(dpp::co_string, "symbol", "Stock symbol", true));
 
     // Add commands to vector and register them
@@ -220,5 +228,6 @@ void Bot::registerCommands()
     commands.push_back(newcommand1);
     commands.push_back(newcommand2);
     commands.push_back(newcommand3);
+    commands.push_back(newcommand4);
     bot.global_bulk_command_create(commands);
 }

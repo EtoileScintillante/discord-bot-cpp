@@ -15,9 +15,10 @@
 #include <iomanip>
 #include "rapidjson/document.h"
 
-// Struct with stock metrics
+// Struct with stock metrics (note that this can also be used for futures)
 struct StockMetrics
 {
+    std::string name = "-";      // Company name (extracted from "displayName", or else from "shortName", which is usually the case with futures)
     std::string currency = "-";  // Currency
     std::string symbol = "-";    // Symbol
     double marketCap = 0;        // Market capitalization of the company's outstanding shares (amount of shares * price of share)
@@ -81,6 +82,9 @@ void fetchAndWriteStockData(const std::string &symbol, const std::string &durati
 /// Function to fetch stock metrics from Yahoo Finance API for a single symbol.
 /// @param symbol The symbol of the stock.
 /// @return StockMetrics struct containing latest price info, dividend yield, moving averages and more.
+/// @note This function does not work with indices (for example ^DJI, ^GSPC). This is because the query used
+///       to fetch the data only works with stocks and futures. To get (historical) price data for indices,
+///       the function fetchOHLCData can be used.
 StockMetrics fetchStockMetrics(const std::string &symbol);
 
 /// Function to get stock metrics in a readable way.
@@ -89,5 +93,13 @@ StockMetrics fetchStockMetrics(const std::string &symbol);
 /// @param markdown When set to true, the formatted string contains Markdown syntax to make it more visually appealing.
 /// @return A string with the metrics.
 std::string getFormattedStockMetrics(const std::string &symbol, bool markdown = false);
+
+/// Function that fetches latest price info of 10 major indices and formats it in a readable way
+/// so that it can be printed. The indices are: S&P 500, Dow Jones Industrial Average, NASDAQ Composite, 
+/// FTSE 100, DAX PERFORMANCE-INDEX, Nikkei 225, HANG SENG INDEX, SSE Composite Index, CAC 40 and S&P/ASX 200.
+/// Besides price info, it will also contain a short bit of info about the index.
+/// @param markdown When set to true, the formatted string will contain Markdown syntax to make it more visually appealing.
+/// @return string with price and index info.
+std::string getFormattedMajorIndices(bool markdown = false);
 
 #endif // DATA_H
