@@ -1,0 +1,84 @@
+{
+    "US": [
+      {
+        "symbol": "^GSPC",
+        "name": "S&P 500",
+        "description": "Represents the performance of the 500 largest publicly traded companies in the US."
+      },
+      {
+        "symbol": "^DJI",
+        "name": "Dow Jones Industrial Average",
+        "description": "Tracks the performance of 30 large, publicly owned companies in the US."
+      },
+      {
+        "symbol": "^IXIC",
+        "name": "NASDAQ Composite",
+        "description": "Measures the performance of all companies listed on the NASDAQ stock exchange."
+      },
+      {
+        "symbol": "^RUT",
+        "name": "Russell 2000",
+        "description": "Measures the performance of approximately 2,000 small-cap companies in the United States."
+      },
+      {
+        "symbol": "^VIX",
+        "name": "CBOE Volatility Index",
+        "description": "A measure of market expectations of near-term volatility as conveyed by S&P 500 stock index option prices."
+      }
+    ],
+    "EU": [
+      {
+        "symbol": "^FTSE",
+        "name": "FTSE 100",
+        "description": "Represents the top 100 companies by market capitalization on the London Stock Exchange."
+      },
+      {
+        "symbol": "^GDAXI",
+        "name": "DAX PERFORMANCE-INDEX",
+        "description": "Measures the performance of the 30 largest companies on the Frankfurt Stock Exchange."
+      },
+      {
+        "symbol": "^FCHI",
+        "name": "CAC 40",
+        "description": "Represents the top 40 companies by market capitalization on Euronext Paris."
+      },
+      {
+        "symbol": "^STOXX50E",
+        "name": "ESTX 50 PR.EUR",
+        "description": "Tracks the performance of the 50 largest and most liquid stocks in the Eurozone."
+      },
+      {
+        "symbol": "FTSEMIB.MI",
+        "name": "FTSE MIB",
+        "description": "Measures the performance of the top 40 companies on the Borsa Italiana stock exchange."
+      }
+    ],
+    "Asia": [
+      {
+        "symbol": "^N225",
+        "name": "Nikkei 225",
+        "description": "Represents the 225 most actively traded companies on the Tokyo Stock Exchange."
+      },
+      {
+        "symbol": "^HSI",
+        "name": "HANG SENG INDEX",
+        "description": "Tracks the performance of the largest and most liquid companies listed in Hong Kong."
+      },
+      {
+        "symbol": "000001.SS",
+        "name": "SSE Composite Index",
+        "description": "Reflects the performance of all stocks listed on the Shanghai Stock Exchange."
+      },
+      {
+        "symbol": "^KS11",
+        "name": "KOSPI Composite Index",
+        "description": "Represents the performance of all companies listed on the Korea Exchange."
+      },
+      {
+        "symbol": "^BSESN",
+        "name": "S&P BSE SENSEX",
+        "description": "Tracks the performance of 30 large, publicly traded companies in India."
+      }
+    ]
+  }
+  
