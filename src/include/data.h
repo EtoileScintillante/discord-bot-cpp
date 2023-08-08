@@ -59,6 +59,7 @@ std::time_t convertToUnixTimestamp(const std::string &date);
 static std::string httpGet(const std::string &url);
 
 /// Function to fetch historical stock data from Yahoo Finance and store OHLC data (and dates and volumes) in a 2D vector.
+/// The interval of the data is one day. 
 /// @param symbol The symbol of the stock.
 /// @param duration The duration/period in the format: 1y, 6mo, 3mo, 2mo, 1mo, 3w, 2w, or 1w.
 /// @return A 2D vector where each row contains the following data: date, open, high, low, close, volume (in that order).
@@ -75,6 +76,7 @@ std::string getFormattedStockPrice(const std::string &symbol, bool markdown = fa
 
 /// Function to fetch historical stock data from Yahoo Finance and write to a txt file.
 /// The txt file will be named {symbol}_{duration}.txt and will be saved in the "data" folder.
+/// The interval of the data is one day. 
 /// @param symbol The symbol of the stock.
 /// @param duration The duration string in the format: 1y, 6mo, 3mo, 2mo, 1mo, 3w, 2w, or 1w.
 void fetchAndWriteStockData(const std::string &symbol, const std::string &duration);
@@ -99,7 +101,7 @@ std::string getFormattedStockMetrics(const std::string &symbol, bool markdown = 
 /// FTSE 100, DAX PERFORMANCE-INDEX, Nikkei 225, HANG SENG INDEX, SSE Composite Index, CAC 40 and S&P/ASX 200.
 /// Besides price info, it will also contain a short bit of info about the index.
 /// @param markdown When set to true, the formatted string will contain Markdown syntax to make it more visually appealing.
-/// @return string with price and index info.
+/// @return A string with prices and indices info.
 std::string getFormattedMajorIndices(bool markdown = false);
 
 #endif // DATA_H
