@@ -50,17 +50,16 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
             future.wait();
 
             // Additional delay to make sure the file is fully written to disk
+            // Without this delay the bot sends an empty image file
             std::this_thread::sleep_for(std::chrono::milliseconds{500});
 
             const std::string imagePath = "../images/price_graph.png";
             const int maxAttempts = 5;
-            const int timeoutMs = 1000; // 1 second
             int attempts = 0;
 
             // Check if the file exists, with a timeout
             while (!std::filesystem::exists(imagePath) && attempts < maxAttempts)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds{timeoutMs});
                 attempts++;
             }
 
@@ -111,17 +110,16 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
             future.wait();
 
             // Additional delay to make sure the file is fully written to disk
+            // Without this delay the bot sends an empty image file
             std::this_thread::sleep_for(std::chrono::milliseconds{500});
 
             std::string imagePath = (showV == "n") ? "../images/candle_chart.png" : "../images/candle_volume.png";
             const int maxAttempts = 5;
-            const int timeoutMs = 1000; // 1 second
             int attempts = 0;
 
-            // Check if the file exists, with a timeout
+            // Check if the file exists
             while (!std::filesystem::exists(imagePath) && attempts < maxAttempts)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds{timeoutMs});
                 attempts++;
             }
 
