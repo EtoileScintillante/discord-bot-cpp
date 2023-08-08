@@ -419,33 +419,25 @@ std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
     return formattedMetrics.str();
 }
 
-std::string getFormattedMajorIndices(bool markdown)
+std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vector<std::string> indicesNames, std::vector<std::string> indicesDescriptions, bool markdown)
 {
-    // Symbols
-    std::vector<std::string> indicesSymbols = {
-        "^GSPC", "^DJI", "^IXIC", "^FTSE", "^GDAXI",
-        "^N225", "^HSI", "000001.SS", "^FCHI", "^AXJO"
-    };
-
-    // Names
-    std::vector<std::string> indicesNames = {
-        "S&P 500", "Dow Jones Industrial Average", "NASDAQ Composite", "FTSE 100", "DAX PERFORMANCE-INDEX",
-        "Nikkei 225", "HANG SENG INDEX", "SSE Composite Index", "CAC 40", "S&P/ASX 200"
-    };
-
-    // Short descriptions
-    std::vector<std::string> indicesDescriptions = {
-        "Represents the performance of the 500 largest publicly traded companies in the US.",
-        "Tracks the performance of 30 large, publicly owned companies in the US.",
-        "Measures the performance of all companies listed on the NASDAQ stock exchange.",
-        "Represents the top 100 companies by market capitalization on the London Stock Exchange.",
-        "Measures the performance of the 30 largest companies on the Frankfurt Stock Exchange.",
-        "Represents the 225 most actively traded companies on the Tokyo Stock Exchange.",
-        "Tracks the performance of the largest and most liquid companies listed in Hong Kong.",
-        "Reflects the performance of all stocks listed on the Shanghai Stock Exchange.",
-        "Represents the top 40 companies by market capitalization on Euronext Paris.",
-        "Measures the performance of the 200 largest companies listed on the Australian Securities Exchange."
-    };
+    // Check if data is available
+    if (indicesSymbols.empty())
+    {
+        return "No data available.";
+    }
+   
+    // Check if there are names and descriptions available
+    bool addNames = false;
+    bool addDescription = false;
+    if ((!indicesNames.empty()) && (indicesNames.size() == indicesSymbols.size()))
+    {
+        addNames = true;
+    }
+    if ((!indicesDescriptions.empty()) && (indicesDescriptions.size() == indicesSymbols.size()))
+    {
+        addDescription = true;
+    }
 
     std::ostringstream formattedString;
 
@@ -479,8 +471,18 @@ std::string getFormattedMajorIndices(bool markdown)
             // Now create string
             if (!markdown)
             {
-                formattedString << indicesNames[i] << std::endl;
-                formattedString << indicesDescriptions[i] << std::endl;
+                if (addNames) // Display name
+                {
+                    formattedString << indicesNames[i] << std::endl;
+                }
+                else // Otherwise just add the symbol
+                {
+                    formattedString << indicesSymbols[i] << std::endl;
+                }
+                if (addDescription) // Add description if available
+                {
+                    formattedString << indicesDescriptions[i] << std::endl;
+                }
                 formattedString << std::fixed << std::setprecision(2);
                 formattedString << "- Latest price: " << latestPrice;
                 if (change >= 0)
@@ -494,14 +496,24 @@ std::string getFormattedMajorIndices(bool markdown)
             }
             else
             {
-                formattedString << "### " << indicesNames[i] << std::endl;
-                formattedString << indicesDescriptions[i] << std::endl;
+                if (addNames) // Display name
+                {
+                    formattedString << "### " << indicesNames[i] << std::endl;
+                }
+                else // Otherwise just add the symbol
+                {
+                    formattedString << "### " << indicesSymbols[i] << std::endl;
+                }
+                if (addDescription) // Add description if available
+                {
+                    formattedString << indicesDescriptions[i] << std::endl;
+                }
                 formattedString << std::fixed << std::setprecision(2);
                 formattedString << "- Latest price: `" << latestPrice;
                 if (change >= 0)
-                    {
-                        formattedString << " (+" << change << "%)`:chart_with_upwards_trend:\n";
-                    }
+                {
+                    formattedString << " (+" << change << "%)`:chart_with_upwards_trend:\n";
+                }
                 else
                 {
                     formattedString << " (" << change << "%)`:chart_with_downwards_trend:\n";
@@ -512,4 +524,52 @@ std::string getFormattedMajorIndices(bool markdown)
     }
 
     return formattedString.str();
+}
+
+std::string getFormattedMajorIndices(const std::string &pathToJson, const std::string &region, bool markdown)
+{
+    // Load JSON data from a file
+    std::ifstream file(pathToJson);
+    if (!file.is_open())
+    {
+        return "Error: Unable to open JSON file.";
+    }
+
+    // Read JSON data from the file
+    std::string jsonData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
+
+    rapidjson::Document document;
+    document.Parse(jsonData.c_str());
+
+    if (!document.IsObject())
+    {
+        return "Error: Invalid JSON data.";
+    }
+
+    rapidjson::Value::ConstMemberIterator regionIt = document.FindMember(region.c_str());
+    if (regionIt == document.MemberEnd() || !regionIt->value.IsArray())
+    {
+        return "Error: Invalid region or region data.";
+    }
+
+    const rapidjson::Value &regionData = regionIt->value;
+
+    std::vector<std::string> indicesSymbols;
+    std::vector<std::string> indicesNames;
+    std::vector<std::string> indicesDescriptions;
+
+    // Put data in vectors
+    for (rapidjson::SizeType i = 0; i < regionData.Size(); ++i)
+    {
+        const rapidjson::Value &indexData = regionData[i];
+        if (indexData.HasMember("symbol") && indexData.HasMember("name") && indexData.HasMember("description"))
+        {
+            indicesSymbols.push_back(indexData["symbol"].GetString());
+            indicesNames.push_back(indexData["name"].GetString());
+            indicesDescriptions.push_back(indexData["description"].GetString());
+        }
+    }
+
+    return getFormattedPrices(indicesSymbols, indicesNames, indicesDescriptions, markdown);
 }

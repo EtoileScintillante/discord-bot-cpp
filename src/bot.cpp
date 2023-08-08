@@ -146,7 +146,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
             }
         }
     }
-    else if (event.command.get_command_name() == "stockmetrics")
+    else if (event.command.get_command_name() == "metrics")
     {
         std::string symbol = std::get<std::string>(event.get_parameter("symbol"));
         std::string metrics = getFormattedStockMetrics(symbol, true);
@@ -154,7 +154,23 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
     }
     else if (event.command.get_command_name() == "majorindices")
     {
-        std::string info = getFormattedMajorIndices(true);
+        std::string info;
+        std::string region = std::get<std::string>(event.get_parameter("region"));
+        if (region == "a")
+        {
+            //info = getFormattedMajorIndicesAsia(true);
+            info = getFormattedMajorIndices("../data/indices.json", "Asia", true);
+        }
+        if (region == "e")
+        {
+            //info = getFormattedMajorIndicesEU(true);
+            info = getFormattedMajorIndices("../data/indices.json", "EU", true);
+        }
+        if (region == "u")
+        {
+            //info = getFormattedMajorIndicesUS(true);
+            info = getFormattedMajorIndices("../data/indices.json", "US", true);
+        }
         event.reply(info);
     }
 }
@@ -170,14 +186,14 @@ void Bot::onReady(const dpp::ready_t &event)
 void Bot::registerCommands()
 {
     // Create slash command
-    dpp::slashcommand newcommand("latestprice", "Get the latest price of a stock from Yahoo Finance", bot.me.id);
+    dpp::slashcommand newcommand("latestprice", "Get the latest price of a stock, future or index", bot.me.id);
     newcommand.add_option(
-        dpp::command_option(dpp::co_string, "symbol", "Stock symbol", true));
+        dpp::command_option(dpp::co_string, "symbol", "Symbol", true));
 
     // Create slash command
-    dpp::slashcommand newcommand1("pricegraph", "Get a graph of the closing and/or open price of a stock", bot.me.id);
+    dpp::slashcommand newcommand1("pricegraph", "Get a graph of the closing and/or open price of a stock, future or index", bot.me.id);
     newcommand1.add_option(
-        dpp::command_option(dpp::co_string, "symbol", "Stock symbol", true));
+        dpp::command_option(dpp::co_string, "symbol", "Symbol", true));
     newcommand1.add_option(
         dpp::command_option(dpp::co_string, "period", "Period/time span", true).
         add_choice(dpp::command_option_choice("1 year", std::string("1y"))).
@@ -195,9 +211,9 @@ void Bot::registerCommands()
         add_choice(dpp::command_option_choice("Both", std::string("3"))));
 
     // Create slash command
-    dpp::slashcommand newcommand2("candlestick", "Get a candlestick chart for a stock (and optionally with volumes)", bot.me.id);
+    dpp::slashcommand newcommand2("candlestick", "Get a candlestick chart for a stock, future or index (optionally with volumes)", bot.me.id);
     newcommand2.add_option(
-        dpp::command_option(dpp::co_string, "symbol", "Stock symbol", true));
+        dpp::command_option(dpp::co_string, "symbol", "Symbol", true));
     newcommand2.add_option(
         dpp::command_option(dpp::co_string, "period", "Period/time span", true).
         add_choice(dpp::command_option_choice("6 months", std::string("6mo"))).
@@ -213,12 +229,17 @@ void Bot::registerCommands()
         add_choice(dpp::command_option_choice("No", std::string("n"))));
     
     // Create slash command
-    dpp::slashcommand newcommand3("majorindices", "Get latest price info for 10 major indices", bot.me.id);
-    
+    dpp::slashcommand newcommand3("majorindices", "Get latest price info for major indices of a certain region", bot.me.id);
+    newcommand3.add_option(
+        dpp::command_option(dpp::co_string, "region", "Region", true).
+        add_choice(dpp::command_option_choice("Asia", std::string("a"))).
+        add_choice(dpp::command_option_choice("Europe", std::string("e"))).
+        add_choice(dpp::command_option_choice("US", std::string("u"))));
+
     // Create slash command
-    dpp::slashcommand newcommand4("stockmetrics", "Get metrics of a stock from Yahoo Finance", bot.me.id);
+    dpp::slashcommand newcommand4("metrics", "Get metrics of a stock, future or index from Yahoo Finance", bot.me.id);
     newcommand4.add_option(
-        dpp::command_option(dpp::co_string, "symbol", "Stock symbol", true));
+        dpp::command_option(dpp::co_string, "symbol", "Symbol", true));
 
     // Add commands to vector and register them
     std::vector<dpp::slashcommand> commands;
