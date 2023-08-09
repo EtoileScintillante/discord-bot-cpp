@@ -2,24 +2,28 @@
 #define BOT_H
 
 #include <dpp/dpp.h>
-#include <chrono> 
-#include <thread> 
+#include <chrono>
+#include <thread>
 #include <string>
 #include <fstream>
 #include <vector>
 #include "data.h"
 #include "visualize.h"
 
-class Bot {
+// Discord bot created with the D++/DPP library
+// It can fetch stock/future/index data and visualize it
+// All data is fetched from Yahoo Finance
+class Bot
+{
 public:
-    Bot(const std::string& token);
+    Bot(const std::string &token);
 
     void run();
 
 private:
     void setupBot();
-    void commandHandler(const dpp::slashcommand_t& event);
-    void onReady(const dpp::ready_t& event);
+    void commandHandler(const dpp::slashcommand_t &event);
+    void onReady(const dpp::ready_t &event);
     void registerCommands();
 
     dpp::cluster bot;

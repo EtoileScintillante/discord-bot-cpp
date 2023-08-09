@@ -237,7 +237,7 @@ void Bot::registerCommands()
         add_choice(dpp::command_option_choice("US", std::string("u"))));
 
     // Create slash command
-    dpp::slashcommand newcommand4("metrics", "Get metrics of a stock, future or index from Yahoo Finance", bot.me.id);
+    dpp::slashcommand newcommand4("metrics", "Get metrics of a stock, future or index", bot.me.id);
     newcommand4.add_option(
         dpp::command_option(dpp::co_string, "symbol", "Symbol", true));
 
