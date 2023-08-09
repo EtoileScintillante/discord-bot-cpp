@@ -19,7 +19,7 @@
 // Note that this can also be used for futures and indices, but in that case some attributes will remain empty
 struct StockMetrics
 {
-    std::string name = "-";      // Company name (extracted from "displayName", or else from "shortName", which is usually the case with futures/indices)
+    std::string name = "-";      // Name of stock(company)/future/index (extracted from "displayName", or else from "shortName", which is usually the case with futures/indices)
     std::string currency = "-";  // Currency
     std::string symbol = "-";    // Symbol
     double marketCap = 0;        // Market capitalization of the company's outstanding shares (amount of shares * price of share)
@@ -85,9 +85,6 @@ void fetchAndWriteStockData(const std::string &symbol, const std::string &durati
 /// Function to fetch stock/future/index metrics from Yahoo Finance API for a single symbol.
 /// @param symbol The symbol of the stock/future/index.
 /// @return StockMetrics struct containing latest price info, dividend yield, moving averages and more.
-/// @note This function does not work with indices (for example ^DJI, ^GSPC). This is because the query used
-///       to fetch the data only works with stocks and futures. To get (historical) price data for indices,
-///       the function fetchOHLCData can be used.
 StockMetrics fetchStockMetrics(const std::string &symbol);
 
 /// Function to get stock/future/index metrics in a readable way.
@@ -112,7 +109,7 @@ std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vec
 
 /// This function reads JSON data containing major indices information for different regions
 /// from a JSON file. It extracts the symbols, names, and descriptions of major indices for the specified region, 
-/// and formats the data using markdown syntax if requested. If an error occurs, it will return an error message.
+/// and formats the data using Markdown syntax if requested. If an error occurs, it will return an error message.
 /// @param pathToJson Path to the JSON file.
 /// @param region The region for which to retrieve and format major indices data. Allowed values: "US", "EU", "Asia".
 /// @param markdown When set to true, the formatted string will contain Markdown syntax to make it more visually appealing.
