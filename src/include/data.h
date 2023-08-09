@@ -1,3 +1,9 @@
+/// @file data.h
+/// @author EtoileScintillante
+/// @brief The following file contains functions to fetch and format equity data.
+///        Data is fetched from Yahoo Finance and may be delayed.
+/// @date 2023-08-09
+
 #ifndef DATA_H
 #define DATA_H
 

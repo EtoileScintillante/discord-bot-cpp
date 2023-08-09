@@ -1,3 +1,8 @@
+/// @file visualize.h
+/// @author EtoileScintillante
+/// @brief The following file contains functions to visualize equity data.      
+/// @date 2023-08-09
+
 #ifndef VISUALIZE_H
 #define VISUALIZE_H
 
@@ -15,10 +20,7 @@
 /// @param ohlcData A 2D vector containing OHLC data, where each row represents
 ///                 a data point and the columns represent: date, open, high,
 ///                 low, and close prices (in this order).
-/// @param mode An integer representing the display mode:
-///             - 1: Display only the open prices.
-///             - 2: Display only the close prices.
-///             - 3: Display both open and close prices.
+/// @param mode An integer representing the display mode (1, 2, or 3).
 ///             Any other value will result in an error message and no plot.
 void priceGraph(const std::vector<std::vector<std::string>>& ohlcData, int mode);
 
@@ -29,7 +31,7 @@ void priceGraph(const std::vector<std::vector<std::string>>& ohlcData, int mode)
 ///                 low, and close prices (in this order).
 /// @note Please note that using OHLC data of a period >=6 months may lead
 ///       to a candlestick chart that is not clearly readable. In such cases, the candlesticks
-///       may appear very thin or small, making it challenging to discern the details.
+///       may appear very thin or small, making it hard to discern the details.
 void createCandle(const std::vector<std::vector<std::string>>& ohlcData);
 
 /// Plot OHLC and volume data in one figure and saves it as candle_volume.png in the folder 'images'.
@@ -40,7 +42,7 @@ void createCandle(const std::vector<std::vector<std::string>>& ohlcData);
 ///                  low, close and volume (in this order).
 /// @note Please note that using OHLCV data of a period >=6 months may lead
 ///       to a candlestick chart and volume graph that are not clearly readable. In such cases, the candlesticks
-///       and volume bars may appear very thin or small, making it challenging to discern the details.
+///       and volume bars may appear very thin or small, making it hard to discern the details.
 void createCandleAndVolume(const std::vector<std::vector<std::string>> &ohlcvData);
 
 

@@ -1,3 +1,11 @@
+/// @file bot.h
+/// @author EtoileScintillante
+/// @brief The following file contains a simple bot class.
+///        The bot is created with the D++/DPP library.
+///        It supports slash commands and its purpose is to fetch equity data 
+///        and visualize it. Data is fetched from Yahoo Finance and may be delayed.
+/// @date 2023-08-09
+
 #ifndef BOT_H
 #define BOT_H
 
@@ -10,9 +18,6 @@
 #include "data.h"
 #include "visualize.h"
 
-// Discord bot created with the D++/DPP library
-// It can fetch stock/future/index data and visualize it
-// All data is fetched from Yahoo Finance
 class Bot
 {
 public:
