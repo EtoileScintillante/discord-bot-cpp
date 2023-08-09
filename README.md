@@ -24,7 +24,7 @@ Important to note is that data may be delayed.
 <img src="docs/indices.png" alt="indices US example" width="500" height="auto" />
 
 ### /pricegraph 
-  - Fetches price data and plots the open and/close price
+  - Fetches price data and plots the open and/or close prices
   - Input: equity symbol, period (e.g. 6 months, 2 weeks, etc.), mode (only open/only close/both)
 
 <img src="docs/pricegraph.png" alt="price graph example" width="500" height="auto" />
