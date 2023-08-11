@@ -463,7 +463,7 @@ std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vec
                 formattedString << indicesDescriptions[i] << std::endl;
             }
             formattedString << std::fixed << std::setprecision(2);
-            formattedString << "- Latest price: " << data.latestPrice;
+            formattedString << "- Latest price: " << data.latestPrice << " " << data.currency;
             if (data.latestChange >= 0)
             {
                 formattedString << " (+" << data.latestChange << "%)\n";
@@ -488,7 +488,7 @@ std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vec
                 formattedString << indicesDescriptions[i] << std::endl;
             }
             formattedString << std::fixed << std::setprecision(2);
-            formattedString << "- Latest price: `" << data.latestPrice;
+            formattedString << "- Latest price: `" << data.latestPrice << " " << data.currency;
             if (data.latestChange >= 0)
             {
                 formattedString << " (+" << data.latestChange << "%)`:chart_with_upwards_trend:\n";
