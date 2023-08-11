@@ -171,12 +171,12 @@ std::string getFormattedStockPrice(const std::string &symbol, bool markdown)
     if (!markdown)
     {
         resultStream << "Latest Price for " << stockMetrics.name << ": " << std::fixed << std::setprecision(2) << stockMetrics.latestPrice << " " << stockMetrics.currency
-                 << " (" << (stockMetrics.latestChange >= 0 ? "+" : "") << std::fixed << std::setprecision(2) << stockMetrics.latestChange << "%)";
+                     << " (" << (stockMetrics.latestChange >= 0 ? "+" : "") << std::fixed << std::setprecision(2) << stockMetrics.latestChange << "%)";
     }
     else
     {
         resultStream << "### Latest Price for " << stockMetrics.name << "\n"
-                 << "`" << std::fixed << std::setprecision(2) << stockMetrics.latestPrice << " " << stockMetrics.currency;
+                     << "`" << std::fixed << std::setprecision(2) << stockMetrics.latestPrice << " " << stockMetrics.currency;
 
         if (stockMetrics.latestChange >= 0)
         {
@@ -294,11 +294,11 @@ StockMetrics fetchStockMetrics(const std::string &symbol)
         }
         else if ((quote.HasMember("shortName") && quote["shortName"].IsString())) // name from shortName
         {
-            stockMetrics.name = quote["shortName"].GetString();     
+            stockMetrics.name = quote["shortName"].GetString();
         }
         if (quote.HasMember("symbol") && quote["symbol"].IsString()) // symbol
         {
-            stockMetrics.symbol = quote["symbol"].GetString(); 
+            stockMetrics.symbol = quote["symbol"].GetString();
         }
         if (quote.HasMember("currency") && quote["currency"].IsString()) // currency
         {
@@ -385,7 +385,8 @@ std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
         formattedMetrics << "Metrics for " << metrics.name << ":\n";
         formattedMetrics << std::fixed << std::setprecision(2);
         formattedMetrics << "- Market Cap:         " << metrics.marketCap << " " << metrics.currency << "\n";
-        formattedMetrics << "- Dividend Yield:     " << metrics.dividendYield << "%" << "\n";
+        formattedMetrics << "- Dividend Yield:     " << metrics.dividendYield << "%"
+                         << "\n";
         formattedMetrics << "- P/E Ratio:          " << metrics.peRatio << "\n";
         formattedMetrics << "- Latest Price:       " << metrics.latestPrice << " " << metrics.currency << "\n";
         formattedMetrics << "- Open price:         " << metrics.openPrice << " " << metrics.currency << "\n";
@@ -426,7 +427,7 @@ std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vec
     {
         return "No data available.";
     }
-   
+
     // Check if there are names and descriptions available
     bool addNames = false;
     bool addDescription = false;
@@ -444,82 +445,58 @@ std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vec
     for (int i = 0; i < indicesSymbols.size(); i++)
     {
         // First fetch price data
-        std::vector<std::vector<std::string>> data = fetchOHLCData(indicesSymbols[i], "1w");
+        StockMetrics data = fetchStockMetrics(indicesSymbols[i]);
 
-        // Check if data exists
-        if (!data.empty())
+        // Now create string
+        if (!markdown)
         {
-            double latestPrice, openPrice, change;
-            // Retrieve latest price and open price (column 4 in row 4)
-            try 
+            if (addNames) // Display name
             {
-                // Access the last row to get the most recent data
-                latestPrice = std::stod(data[data.size()-1][4]);
-                openPrice = std::stod(data[data.size()-1][1]);
-
-                // Calculate % of change
-                if (openPrice != 0)
-                {
-                    change = ((latestPrice - openPrice) / openPrice) * 100.0;
-                }
+                formattedString << indicesNames[i] << std::endl;
             }
-            catch (const std::exception& e) {
-                std::cerr << "An error occurred: " << e.what() << std::endl;
-                latestPrice = openPrice = change = 0; // Set everything to zero in case of an error
-            }
-
-            // Now create string
-            if (!markdown)
+            else // Otherwise just add the symbol
             {
-                if (addNames) // Display name
-                {
-                    formattedString << indicesNames[i] << std::endl;
-                }
-                else // Otherwise just add the symbol
-                {
-                    formattedString << indicesSymbols[i] << std::endl;
-                }
-                if (addDescription) // Add description if available
-                {
-                    formattedString << indicesDescriptions[i] << std::endl;
-                }
-                formattedString << std::fixed << std::setprecision(2);
-                formattedString << "- Latest price: " << latestPrice;
-                if (change >= 0)
-                    {
-                        formattedString << " (+" << change << "%)\n";
-                    }
-                else
-                {
-                    formattedString << " (" << change << "%)\n";
-                }
+                formattedString << indicesSymbols[i] << std::endl;
+            }
+            if (addDescription) // Add description if available
+            {
+                formattedString << indicesDescriptions[i] << std::endl;
+            }
+            formattedString << std::fixed << std::setprecision(2);
+            formattedString << "- Latest price: " << data.latestPrice;
+            if (data.latestChange >= 0)
+            {
+                formattedString << " (+" << data.latestChange << "%)\n";
             }
             else
             {
-                if (addNames) // Display name
-                {
-                    formattedString << "### " << indicesNames[i] << std::endl;
-                }
-                else // Otherwise just add the symbol
-                {
-                    formattedString << "### " << indicesSymbols[i] << std::endl;
-                }
-                if (addDescription) // Add description if available
-                {
-                    formattedString << indicesDescriptions[i] << std::endl;
-                }
-                formattedString << std::fixed << std::setprecision(2);
-                formattedString << "- Latest price: `" << latestPrice;
-                if (change >= 0)
-                {
-                    formattedString << " (+" << change << "%)`:chart_with_upwards_trend:\n";
-                }
-                else
-                {
-                    formattedString << " (" << change << "%)`:chart_with_downwards_trend:\n";
-                }
+                formattedString << " (" << data.latestChange << "%)\n";
             }
-            
+        }
+        else
+        {
+            if (addNames) // Display name
+            {
+                formattedString << "### " << indicesNames[i] << std::endl;
+            }
+            else // Otherwise just add the symbol
+            {
+                formattedString << "### " << indicesSymbols[i] << std::endl;
+            }
+            if (addDescription) // Add description if available
+            {
+                formattedString << indicesDescriptions[i] << std::endl;
+            }
+            formattedString << std::fixed << std::setprecision(2);
+            formattedString << "- Latest price: `" << data.latestPrice;
+            if (data.latestChange >= 0)
+            {
+                formattedString << " (+" << data.latestChange << "%)`:chart_with_upwards_trend:\n";
+            }
+            else
+            {
+                formattedString << " (" << data.latestChange << "%)`:chart_with_downwards_trend:\n";
+            }
         }
     }
 
