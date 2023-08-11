@@ -118,8 +118,9 @@ std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vec
 /// and formats the data using Markdown syntax if requested. If an error occurs, it will return an error message.
 /// @param pathToJson Path to the JSON file.
 /// @param region The region for which to retrieve and format major indices data. Allowed values: "US", "EU", "Asia".
+/// @param description When set to true, a short description (one sentence) about the index will be added.
 /// @param markdown When set to true, the formatted string will contain Markdown syntax to make it more visually appealing.
 /// @return A string with the formatted price data and descriptions.
-std::string getFormattedMajorIndices(const std::string &pathToJson, const std::string &region, bool markdown = false);
+std::string getFormattedMajorIndices(const std::string &pathToJson, const std::string &region, bool description, bool markdown = false);
 
 #endif // DATA_H

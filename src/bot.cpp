@@ -41,13 +41,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         }
         else // Create graph
         {
-            // Use std::async to create the graph asynchronously
-            auto future = std::async(std::launch::async, [&]()
-                                    {
-                    priceGraph(ohlcData, std::stoi(mode)); });
-
-            // Wait for the graph creation to finish
-            future.wait();
+            priceGraph(ohlcData, std::stoi(mode));
 
             // Additional delay to make sure the file is fully written to disk
             // Without this delay the bot sends an empty image file
@@ -99,15 +93,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         }
         else // Create figure
         {
-            // Use std::async to create the graph asynchronously
-            auto future = std::async(std::launch::async, [&]()
-                                    {
-                    
-                    (showV == "n") ? createCandle(ohlcData) : createCandleAndVolume(ohlcData);
-                    });
-
-            // Wait for the graph creation to finish
-            future.wait();
+            (showV == "n") ? createCandle(ohlcData) : createCandleAndVolume(ohlcData);
 
             // Additional delay to make sure the file is fully written to disk
             // Without this delay the bot sends an empty image file
@@ -154,21 +140,10 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
     }
     else if (event.command.get_command_name() == "majorindices")
     {
-        std::string info;
         std::string region = std::get<std::string>(event.get_parameter("region"));
-        if (region == "a")
-        {
-            info = getFormattedMajorIndices("../data/indices.json", "Asia", true);
-        }
-        if (region == "e")
-        {
-            info = getFormattedMajorIndices("../data/indices.json", "EU", true);
-        }
-        if (region == "u")
-        {
-            info = getFormattedMajorIndices("../data/indices.json", "US", true);
-        }
-        event.reply(info);
+        std::string description = std::get<std::string>(event.get_parameter("description"));
+        bool showDesc = (description == "n") ? false : true;
+        event.reply(getFormattedMajorIndices("../data/indices.json", region, showDesc, true));
     }
 }
 
@@ -229,9 +204,13 @@ void Bot::registerCommands()
     dpp::slashcommand majorindices("majorindices", "Get latest price info for major indices of a certain region", bot.me.id);
     majorindices.add_option(
         dpp::command_option(dpp::co_string, "region", "Region", true).
-        add_choice(dpp::command_option_choice("Asia", std::string("a"))).
-        add_choice(dpp::command_option_choice("Europe", std::string("e"))).
-        add_choice(dpp::command_option_choice("US", std::string("u"))));
+        add_choice(dpp::command_option_choice("Asia", std::string("Asia"))).
+        add_choice(dpp::command_option_choice("Europe", std::string("EU"))).
+        add_choice(dpp::command_option_choice("US", std::string("US"))));
+    majorindices.add_option(
+        dpp::command_option(dpp::co_string, "description", "Short description about the indices", true).
+        add_choice(dpp::command_option_choice("Yes", std::string("y"))).
+        add_choice(dpp::command_option_choice("No", std::string("n"))));
 
     // Create slash command
     dpp::slashcommand metrics("metrics", "Get metrics of a stock, future or index", bot.me.id);

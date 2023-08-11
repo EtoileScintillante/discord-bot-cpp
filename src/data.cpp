@@ -503,7 +503,7 @@ std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vec
     return formattedString.str();
 }
 
-std::string getFormattedMajorIndices(const std::string &pathToJson, const std::string &region, bool markdown)
+std::string getFormattedMajorIndices(const std::string &pathToJson, const std::string &region, bool description, bool markdown)
 {
     // Load JSON data from a file
     std::ifstream file(pathToJson);
@@ -544,7 +544,10 @@ std::string getFormattedMajorIndices(const std::string &pathToJson, const std::s
         {
             indicesSymbols.push_back(indexData["symbol"].GetString());
             indicesNames.push_back(indexData["name"].GetString());
-            indicesDescriptions.push_back(indexData["description"].GetString());
+            if (description)
+            {
+                indicesDescriptions.push_back(indexData["description"].GetString());
+            }
         }
     }
 
