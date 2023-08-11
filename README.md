@@ -19,9 +19,10 @@ Important to note is that data may be delayed.
 
 ### /majorindices
   - Fetches latest price data for certain major indices based on the given region  
-  - Input: region (US/EU/Asia)
+    and optionally adds a short description (one sentence) about the indices  
+  - Input: region (US/EU/Asia), description (yes/no)
 
-<img src="docs/indices.png" alt="indices US example" width="500" height="auto" />
+<img src="docs/majorindices.png" alt="indices US example" width="330" height="auto" />
 
 ### /pricegraph 
   - Fetches price data and plots the open and/or close prices
