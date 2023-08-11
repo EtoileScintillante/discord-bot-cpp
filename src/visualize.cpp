@@ -25,9 +25,17 @@ void priceGraph(const std::vector<std::vector<std::string>> &ohlcData, int mode)
         xAxis.push_back(i);
         if (row.size() >= 5)
         {
-            openingPrices.push_back(std::stod(row[1])); // Opening price (column 1 in OHLC data)
-            closingPrices.push_back(std::stod(row[4])); // Closing price (column 4 in OHLC data)
-            dates.push_back(row[0]);                    // Date in format y/m/d (column 0 in OHLC data)
+            try
+            {
+                openingPrices.push_back(std::stod(row[1])); // Opening price (column 1 in OHLC data)
+                closingPrices.push_back(std::stod(row[4])); // Closing price (column 4 in OHLC data)
+                dates.push_back(row[0]);                    // Date in format y/m/d (column 0 in OHLC data)
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+                return;
+            }    
         }
         i++;
     }
@@ -105,19 +113,29 @@ void createCandle(const std::vector<std::vector<std::string>> &ohlcData)
         xAxis.push_back(i);
         if (row.size() >= 5)
         {
-            dates.push_back(row[0]); // Date in format y/m/d (column 0 in OHLC data)
-            openingPrices.push_back(std::stod(row[1])); // Opening price (column 1 in OHLC data)
-            highPrices.push_back(std::stod(row[2])); // High price (column 2 in OHLC data)
-            lowPrices.push_back(std::stod(row[3]));  // Low price (column 3 in OHLC data)
-            closingPrices.push_back(std::stod(row[4])); // Closing price (column 4 in OHLC data)
-            if (std::stod(row[4]) >= std::stod(row[1]))
+            try
             {
-                candleColor.push_back("green");
+                dates.push_back(row[0]); // Date in format y/m/d (column 0 in OHLC data)
+                openingPrices.push_back(std::stod(row[1])); // Opening price (column 1 in OHLC data)
+                highPrices.push_back(std::stod(row[2])); // High price (column 2 in OHLC data)
+                lowPrices.push_back(std::stod(row[3]));  // Low price (column 3 in OHLC data)
+                closingPrices.push_back(std::stod(row[4])); // Closing price (column 4 in OHLC data)
+                if (std::stod(row[4]) >= std::stod(row[1]))
+                {
+                    candleColor.push_back("green");
+                }
+                else
+                {
+                    candleColor.push_back("red");
+                }
             }
-            else
+            catch(const std::exception& e)
             {
-                candleColor.push_back("red");
+                std::cerr << e.what() << '\n';
+                return;
             }
+            
+            
         }
         i++;
     }
@@ -206,20 +224,30 @@ void createCandleAndVolume(const std::vector<std::vector<std::string>> &ohlcvDat
         xAxis.push_back(i);
         if (row.size() >= 5)
         {
-            dates.push_back(row[0]);                    // Date in format y/m/d (column 0 in OHLC data)
-            openingPrices.push_back(std::stod(row[1])); // Opening price (column 1 in OHLC data)
-            highPrices.push_back(std::stod(row[2]));    // High price (column 2 in OHLC data)
-            lowPrices.push_back(std::stod(row[3]));     // Low price (column 3 in OHLC data)
-            closingPrices.push_back(std::stod(row[4])); // Closing price (column 4 in OHLC data)
-            volumes.push_back(std::stod(row[5]));       // Volumes (column 5 in OHLC data)
-            if (std::stod(row[4]) >= std::stod(row[1]))
+            try
             {
-                candleColor.push_back("green");
+                dates.push_back(row[0]);                    // Date in format y/m/d (column 0 in OHLC data)
+                openingPrices.push_back(std::stod(row[1])); // Opening price (column 1 in OHLC data)
+                highPrices.push_back(std::stod(row[2]));    // High price (column 2 in OHLC data)
+                lowPrices.push_back(std::stod(row[3]));     // Low price (column 3 in OHLC data)
+                closingPrices.push_back(std::stod(row[4])); // Closing price (column 4 in OHLC data)
+                volumes.push_back(std::stod(row[5]));       // Volumes (column 5 in OHLC data)
+                if (std::stod(row[4]) >= std::stod(row[1]))
+                {
+                    candleColor.push_back("green");
+                }
+                else
+                {
+                    candleColor.push_back("red");
+                }
             }
-            else
+            catch(const std::exception& e)
             {
-                candleColor.push_back("red");
+                std::cerr << e.what() << '\n';
+                return;
             }
+            
+            
         }
         i++;
     }
