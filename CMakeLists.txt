@@ -65,7 +65,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE CURL::libcurl PRIVATE dpp PUBLIC m
 
 # Specify include directories
 include_directories(src/include)
-target_include_directories(${PROJECT_NAME}
-    PRIVATE ${rapidjson_SOURCE_DIR}/include
-    PRIVATE deps/DPP/include)
+if(NOT ${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm64")
+    target_include_directories(${PROJECT_NAME}
+        PRIVATE ${rapidjson_SOURCE_DIR}/include
+        PRIVATE ${dpp_SOURCE_DIR}/include)
+else()
+    target_include_directories(${PROJECT_NAME}
+        PRIVATE ${rapidjson_SOURCE_DIR}/include
+        PRIVATE deps/DPP/include)
+endif()
 
