@@ -45,7 +45,7 @@ endif()
 
 # Check target architecture
 if(NOT ${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm64")
-    # D++ library for non-arm64 platforms
+    # D++ library for non-arm64 macOS
     include(FetchContent)
     FetchContent_Declare(dpp
         GIT_REPOSITORY https://github.com/brainboxdotcc/DPP.git
@@ -56,7 +56,7 @@ if(NOT ${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm64")
         add_subdirectory(${dpp_SOURCE_DIR} ${dpp_BINARY_DIR})
     endif()
 else()
-    # Use the prebuilt D++ library for arm64
+    # Use the prebuilt D++ library for arm64 macOS
     target_link_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/deps/DPP/library)
 endif()
 
