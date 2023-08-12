@@ -1,11 +1,12 @@
 name: Build
+
 on:
   push:
     branches:
       - master
 
 jobs:
-  build:
+  build-macos:
     runs-on: macos-latest
 
     steps:
@@ -17,7 +18,25 @@ jobs:
         mkdir build
         cd build
         cmake ..
-        
+
+    - name: Build project
+      run: |
+        cd build
+        cmake --build .
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up CMake
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+
     - name: Build project
       run: |
         cd build
