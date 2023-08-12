@@ -1,6 +1,7 @@
 # discord-bot-cpp
+[![Build Status](https://github.com/EtoileScintillante/discord-bot-cpp/workflows/Build/badge.svg)](https://github.com/EtoileScintillante/discord-bot-cpp/actions)  
 Discord bot written in C++ with the [D++/DPP library](https://github.com/brainboxdotcc/DPP).  
-It can fetch stock/future/index data and visualize it.  
+It can fetch equity (stock/future/index) data and visualize it.  
 All data is fetched from [Yahoo Finance](https://finance.yahoo.com).   
 Important to note is that data may be delayed.
 
@@ -36,8 +37,7 @@ Important to note is that data may be delayed.
 
 <img src="docs/candlestick.png" alt="candlestick example" width="500" height="auto" />
 
-## Building and Running the Bot
-
+## Building and Running the Bot (macOS) 
 ### Prerequisites
 
 - [CMake](https://cmake.org) (version 3.5 or higher)
@@ -46,7 +46,6 @@ Important to note is that data may be delayed.
 - Discord Bot Token (add this to a .config file)
 
 ### Instructions
-
 1. Clone the repository
 
     ```bash
@@ -54,13 +53,7 @@ Important to note is that data may be delayed.
     cd discord-bot-cpp
     ```
 
-2. Build DPP Library (optional)
-
-    The DPP library is included in this repo, but it's prebuilt on a MacBook with an M1 chip.  
-   If you're using a different system, you may need to build the DPP library from source or install it another way.  
-   See https://dpp.dev/md_docpages_01_installing.html for more info.
-
-4. Build and Run the Bot
+2. Build and Run the Bot
 
     ```bash
     mkdir build
