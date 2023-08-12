@@ -7,9 +7,6 @@ on:
 jobs:
   build:
     runs-on: macos-latest
-    strategy:
-        matrix:
-          arch: [arm64]
 
     steps:
     - name: Checkout repository
