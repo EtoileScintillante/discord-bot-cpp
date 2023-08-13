@@ -348,13 +348,17 @@ StockMetrics fetchStockMetrics(const std::string &symbol)
         {
             stockMetrics.fiftyTwoWeekHigh = quote["fiftyTwoWeekHigh"].GetDouble();
         }
-        if (quote.HasMember("fiftyDayAverage") && quote["fiftyDayAverage"].IsNumber()) // MA_50
+        if (quote.HasMember("fiftyDayAverage") && quote["fiftyDayAverage"].IsNumber()) // avg_50
         {
-            stockMetrics.MA_50 = quote["fiftyDayAverage"].GetDouble();
+            stockMetrics.avg_50 = quote["fiftyDayAverage"].GetDouble();
         }
-        if (quote.HasMember("twoHundredDayAverage") && quote["twoHundredDayAverage"].IsNumber()) // MA_200
+        if (quote.HasMember("twoHundredDayAverage") && quote["twoHundredDayAverage"].IsNumber()) // avg_200
         {
-            stockMetrics.MA_200 = quote["twoHundredDayAverage"].GetDouble();
+            stockMetrics.avg_200 = quote["twoHundredDayAverage"].GetDouble();
+        }
+        if (quote.HasMember("averageDailyVolume3Month") && quote["averageDailyVolume3Month"].IsNumber()) // avgVol_3mo
+        {
+            stockMetrics.avgVol_3mo = quote["averageDailyVolume3Month"].GetDouble();
         }
     }
     else
@@ -385,8 +389,7 @@ std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
         formattedMetrics << "Metrics for " << metrics.name << ":\n";
         formattedMetrics << std::fixed << std::setprecision(2);
         formattedMetrics << "- Market Cap:         " << metrics.marketCap << " " << metrics.currency << "\n";
-        formattedMetrics << "- Dividend Yield:     " << metrics.dividendYield << "%"
-                         << "\n";
+        formattedMetrics << "- Dividend Yield:     " << metrics.dividendYield << "%\n";
         formattedMetrics << "- P/E Ratio:          " << metrics.peRatio << "\n";
         formattedMetrics << "- Latest Price:       " << metrics.latestPrice << " " << metrics.currency << "\n";
         formattedMetrics << "- Open price:         " << metrics.openPrice << " " << metrics.currency << "\n";
@@ -395,25 +398,29 @@ std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
         formattedMetrics << "- Previous Close:     " << metrics.prevClose << " " << metrics.currency << "\n";
         formattedMetrics << "- 52 Week Low:        " << metrics.fiftyTwoWeekLow << " " << metrics.currency << "\n";
         formattedMetrics << "- 52 Week High:       " << metrics.fiftyTwoWeekHigh << " " << metrics.currency << "\n";
-        formattedMetrics << "- MA50:               " << metrics.MA_50 << " " << metrics.currency << "\n";
-        formattedMetrics << "- MA200:              " << metrics.MA_200 << " " << metrics.currency << "\n";
+        formattedMetrics << "- 50 Day avg:         " << metrics.avg_50 << " " << metrics.currency << "\n";
+        formattedMetrics << "- 200 Day avg:        " << metrics.avg_200 << " " << metrics.currency << "\n";
+        formattedMetrics << std::fixed << std::setprecision(0); // For average volume no need for decimal places
+        formattedMetrics << "- 3 Month Volume avg: " << metrics.avgVol_3mo << "\n";
     }
     else // It looks weird but this way in Discord the spaces between the names and values are even
     {
         formattedMetrics << "### Metrics for " << metrics.name << "\n";
         formattedMetrics << std::fixed << std::setprecision(2);
-        formattedMetrics << "- Market Cap:          `" << metrics.marketCap << " " << metrics.currency << "`\n";
-        formattedMetrics << "- Dividend Yield:     `" << metrics.dividendYield << "%`\n";
-        formattedMetrics << "- P/E Ratio:              `" << metrics.peRatio << "`\n";
-        formattedMetrics << "- Latest Price:         `" << metrics.latestPrice << " " << metrics.currency << "`\n";
-        formattedMetrics << "- Open price:           `" << metrics.openPrice << " " << metrics.currency << "`\n";
-        formattedMetrics << "- Day Low:                `" << metrics.dayLow << " " << metrics.currency << "`\n";
-        formattedMetrics << "- Day High:               `" << metrics.dayHigh << " " << metrics.currency << "`\n";
-        formattedMetrics << "- Previous Close:    `" << metrics.prevClose << " " << metrics.currency << "`\n";
-        formattedMetrics << "- 52 Week Low:       `" << metrics.fiftyTwoWeekLow << " " << metrics.currency << "`\n";
-        formattedMetrics << "- 52 Week High:      `" << metrics.fiftyTwoWeekHigh << " " << metrics.currency << "`\n";
-        formattedMetrics << "- MA50:                    `" << metrics.MA_50 << " " << metrics.currency << "`\n";
-        formattedMetrics << "- MA200:                 `" << metrics.MA_200 << " " << metrics.currency << "`\n";
+        formattedMetrics << "- Market Cap:                          `" << metrics.marketCap << " " << metrics.currency << "`\n";
+        formattedMetrics << "- Dividend Yield:                     `" << metrics.dividendYield << "%`\n";
+        formattedMetrics << "- P/E Ratio:                              `" << metrics.peRatio << "`\n";
+        formattedMetrics << "- Latest Price:                         `" << metrics.latestPrice << " " << metrics.currency << "`\n";
+        formattedMetrics << "- Open price:                           `" << metrics.openPrice << " " << metrics.currency << "`\n";
+        formattedMetrics << "- Day Low:                                `" << metrics.dayLow << " " << metrics.currency << "`\n";
+        formattedMetrics << "- Day High:                               `" << metrics.dayHigh << " " << metrics.currency << "`\n";
+        formattedMetrics << "- Previous Close:                    `" << metrics.prevClose << " " << metrics.currency << "`\n";
+        formattedMetrics << "- 52 Week Low:                       `" << metrics.fiftyTwoWeekLow << " " << metrics.currency << "`\n";
+        formattedMetrics << "- 52 Week High:                      `" << metrics.fiftyTwoWeekHigh << " " << metrics.currency << "`\n";
+        formattedMetrics << "- 50 Day avg:                           `" << metrics.avg_50 << " " << metrics.currency << "`\n";
+        formattedMetrics << "- 200 Day avg:                         `" << metrics.avg_200 << " " << metrics.currency << "`\n";
+        formattedMetrics << std::fixed << std::setprecision(0); // For average volume no need for decimal places
+        formattedMetrics << "- 3 Month Volume avg:         `" << metrics.avgVol_3mo << "`\n";
     }
 
     // Return the formatted metrics as a string

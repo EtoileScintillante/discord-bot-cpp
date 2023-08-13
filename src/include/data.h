@@ -39,8 +39,9 @@ struct StockMetrics
     double prevClose = 0;        // Previous closing price
     double fiftyTwoWeekLow = 0;  // 52 week low (lowest price in last 52 weeks)
     double fiftyTwoWeekHigh = 0; // 52 week high (highest price in last 52 weeks)
-    double MA_50 = 0;            // Moving Average 50 Days
-    double MA_200 = 0;           // moving Average 200 Days
+    double avg_50 = 0;           // Average price over 50 Days
+    double avg_200 = 0;          // Average price over 200 Days
+    double avgVol_3mo = 0;       // Average daily trading volumes over a 3-month period
 };
 
 /// Callback function to write received data to a string.
@@ -90,7 +91,7 @@ void fetchAndWriteStockData(const std::string &symbol, const std::string &durati
 
 /// Function to fetch stock/future/index metrics from Yahoo Finance API for a single symbol.
 /// @param symbol The symbol of the stock/future/index.
-/// @return StockMetrics struct containing latest price info, dividend yield, moving averages and more.
+/// @return StockMetrics struct containing price info, dividend yield, market capitalization and more.
 StockMetrics fetchStockMetrics(const std::string &symbol);
 
 /// Function to get stock/future/index metrics in a readable way.
