@@ -1,4 +1,4 @@
-# discord-bot-cpp
+# equity-bot-discord
 [![Build Status](https://github.com/EtoileScintillante/discord-bot-cpp/workflows/Build/badge.svg)](https://github.com/EtoileScintillante/discord-bot-cpp/actions)  
 Discord bot written in C++ with the [D++/DPP library](https://github.com/brainboxdotcc/DPP).  
 It can fetch equity (stock/future/index) data and visualize it.  
