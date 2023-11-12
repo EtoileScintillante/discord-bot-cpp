@@ -25,6 +25,11 @@ Important to note is that data may be delayed.
 
 <img src="docs/majorindices.png" alt="indices US example" width="330" height="auto" />
 
+### /commodities
+  - Fetches latest price data for different commodities, such as Crude Oil and Gold
+
+<img src="docs/commodities.png" alt="commodities example" width="auto" height="420" />
+
 ### /pricegraph 
   - Fetches price data and plots the open and/or close prices
   - Input: equity symbol, period (e.g. 6 months, 2 weeks, etc.), mode (only open/only close/both)
@@ -53,12 +58,17 @@ Important to note is that data may be delayed.
     cd discord-bot-cpp
     ```
 
-2. Build and Run the Bot
+2. Build the Bot
 
     ```bash
     mkdir build
     cd build
     cmake ..
     cmake --build .
+    ```
+
+3. Run the Bot
+
+    ```bash
     ./equity-bot
     ```
