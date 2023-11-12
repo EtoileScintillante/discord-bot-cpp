@@ -1,0 +1,32 @@
+{
+    "commodities": [
+      {
+        "symbol": "BZ=F",
+        "name": "Brent Crude Oil"
+      },
+      {
+        "symbol": "CL=F",
+        "name": "WTI Crude Oil"
+      },
+      {
+        "symbol": "NG=F",
+        "name": "Natural Gas"
+      },
+      {
+        "symbol": "GC=F",
+        "name": "Gold"
+      },
+      {
+        "symbol": "SI=F",
+        "name": "Silver"
+      },
+      {
+        "symbol": "PL=F",
+        "name": "Platinum"
+      },
+      {
+        "symbol": "HG=F",
+        "name": "Copper"
+      }
+    ]
+  }
