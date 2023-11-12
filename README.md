@@ -1,5 +1,5 @@
 # equity-bot-discord
-[![macOS Build Status](https://github.com/EtoileScintillante/discord-bot-cpp/workflows/Build-macOS/badge.svg)](https://github.com/EtoileScintillante/discord-bot-cpp/actions)  
+[![macOS Build Status](https://github.com/EtoileScintillante/equity-bot-discord/workflows/Build-macOS/badge.svg)](https://github.com/EtoileScintillante/equity-bot-discord/actions)  
 Discord bot written in C++ with the [D++/DPP library](https://github.com/brainboxdotcc/DPP).  
 It can fetch equity (stock/future/index) data and visualize it.  
 All data is fetched from [Yahoo Finance](https://finance.yahoo.com).   
@@ -51,11 +51,11 @@ Important to note is that data may be delayed.
 - Discord Bot Token (add this to a .config file)
 
 ### Instructions
-1. Clone the repository
+1. Clone this Repository
 
     ```bash
-    git clone https://github.com/EtoileScintillante/discord-bot-cpp.git
-    cd discord-bot-cpp
+    git clone https://github.com/EtoileScintillante/equity-bot-discord.git
+    cd equity-bot-discord
     ```
 
 2. Build the Bot
