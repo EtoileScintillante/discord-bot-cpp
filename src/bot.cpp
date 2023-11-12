@@ -145,6 +145,10 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         bool showDesc = (description == "n") ? false : true;
         event.reply(getFormattedMajorIndices("../data/indices.json", region, showDesc, true));
     }
+    else if (event.command.get_command_name() == "commodities")
+    {
+        event.reply(getFormattedCommodities("../data/commodities.json", true));
+    }
 }
 
 void Bot::onReady(const dpp::ready_t &event)
@@ -157,12 +161,12 @@ void Bot::onReady(const dpp::ready_t &event)
 
 void Bot::registerCommands()
 {
-    // Create slash command
+    // Create slash command for latestprice
     dpp::slashcommand latestprice("latestprice", "Get the latest price of a stock, future or index", bot.me.id);
     latestprice.add_option(
         dpp::command_option(dpp::co_string, "symbol", "Symbol", true));
 
-    // Create slash command
+    // Create slash command for pricegraoh
     dpp::slashcommand pricegraph("pricegraph", "Get a graph of the closing and/or open price of a stock, future or index", bot.me.id);
     pricegraph.add_option(
         dpp::command_option(dpp::co_string, "symbol", "Symbol", true));
@@ -182,7 +186,7 @@ void Bot::registerCommands()
         add_choice(dpp::command_option_choice("Only close", std::string("2"))).
         add_choice(dpp::command_option_choice("Both", std::string("3"))));
 
-    // Create slash command
+    // Create slash command for candlestick
     dpp::slashcommand candlestick("candlestick", "Get a candlestick chart for a stock, future or index (optionally with volumes)", bot.me.id);
     candlestick.add_option(
         dpp::command_option(dpp::co_string, "symbol", "Symbol", true));
@@ -200,7 +204,7 @@ void Bot::registerCommands()
         add_choice(dpp::command_option_choice("Yes", std::string("y"))).
         add_choice(dpp::command_option_choice("No", std::string("n"))));
     
-    // Create slash command
+    // Create slash command for majorindices
     dpp::slashcommand majorindices("majorindices", "Get latest price info for major indices of a certain region", bot.me.id);
     majorindices.add_option(
         dpp::command_option(dpp::co_string, "region", "Region", true).
@@ -212,10 +216,13 @@ void Bot::registerCommands()
         add_choice(dpp::command_option_choice("Yes", std::string("y"))).
         add_choice(dpp::command_option_choice("No", std::string("n"))));
 
-    // Create slash command
+    // Create slash command for metrics
     dpp::slashcommand metrics("metrics", "Get metrics of a stock, future or index", bot.me.id);
     metrics.add_option(
         dpp::command_option(dpp::co_string, "symbol", "Symbol", true));
+
+    // Create slash command for commodities
+    dpp::slashcommand commodities("commodities", "Get the latest prices of different commodities", bot.me.id);
 
     // Add commands to vector and register them
     std::vector<dpp::slashcommand> commands;
@@ -224,5 +231,6 @@ void Bot::registerCommands()
     commands.push_back(candlestick);
     commands.push_back(majorindices);
     commands.push_back(metrics);
+    commands.push_back(commodities);
     bot.global_bulk_command_create(commands);
 }
