@@ -124,4 +124,12 @@ std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vec
 /// @return A string with the formatted price data and descriptions.
 std::string getFormattedMajorIndices(const std::string &pathToJson, const std::string &region, bool description, bool markdown = false);
 
+/// This function reads JSON data containing names and symbols of different commodities
+/// from a JSON file. It extracts the symbols and names and formats the data
+/// using Markdown syntax if requested. If an error occurs, it will return an error message.
+/// @param pathToJson Path to the JSON file.
+/// @param markdown When set to true, the formatted string will contain Markdown syntax to make it more visually appealing.
+/// @return A string with the formatted price data.
+std::string getFormattedCommodities(const std::string &pathToJson, bool markdown = false);
+
 #endif // DATA_H

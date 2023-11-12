@@ -560,3 +560,48 @@ std::string getFormattedMajorIndices(const std::string &pathToJson, const std::s
 
     return getFormattedPrices(indicesSymbols, indicesNames, indicesDescriptions, markdown);
 }
+
+std::string getFormattedCommodities(const std::string &pathToJson, bool markdown)
+{
+    // Load JSON data from a file
+    std::ifstream file(pathToJson);
+    if (!file.is_open()) {
+        return "Error: Unable to open JSON file.";
+    }
+
+    // Read JSON data from the file
+    std::string jsonData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
+
+    rapidjson::Document document;
+    document.Parse(jsonData.c_str());
+
+    if (!document.IsObject()) 
+    {
+        return "Error: Invalid JSON data.";
+    }
+
+    rapidjson::Value::ConstMemberIterator commodities = document.FindMember("commodities");
+    if (commodities == document.MemberEnd() || !commodities->value.IsArray()) 
+    {
+        return "Error: commodities data not found.";
+    }
+
+    const rapidjson::Value &commoditiesData = commodities->value;
+
+    std::vector<std::string> symbols;
+    std::vector<std::string> names;
+
+    // Put data in vectors
+    for (rapidjson::SizeType i = 0; i < commoditiesData.Size(); ++i) 
+    {
+        const rapidjson::Value &comData = commoditiesData[i];
+        if (comData.HasMember("symbol") && comData.HasMember("name")) 
+        {
+            symbols.push_back(comData["symbol"].GetString());
+            names.push_back(comData["name"].GetString());
+        }
+    }
+
+    return getFormattedPrices(symbols, names, {}, markdown);
+}
