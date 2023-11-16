@@ -510,7 +510,7 @@ std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vec
     return formattedString.str();
 }
 
-std::string getFormattedMajorIndices(const std::string &pathToJson, const std::string &region, bool description, bool markdown)
+std::string getFormattedJSON(const std::string &pathToJson, bool markdown, bool description, const std::string &region)
 {
     // Load JSON data from a file
     std::ifstream file(pathToJson);
@@ -531,77 +531,58 @@ std::string getFormattedMajorIndices(const std::string &pathToJson, const std::s
         return "Error: Invalid JSON data.";
     }
 
-    rapidjson::Value::ConstMemberIterator regionIt = document.FindMember(region.c_str());
-    if (regionIt == document.MemberEnd() || !regionIt->value.IsArray())
+    rapidjson::Value::ConstMemberIterator dataIt;
+
+    // Indices data
+    if (region != "")
     {
-        return "Error: Invalid region or region data.";
+        dataIt = document.FindMember(region.c_str());
+        if (dataIt == document.MemberEnd() || !dataIt->value.IsArray())
+        {
+            return "Error: Invalid region or region data.";
+        }
     }
 
-    const rapidjson::Value &regionData = regionIt->value;
+    // Commodities data
+    if (document.HasMember("commodities"))
+    {
+        dataIt = document.FindMember("commodities");
+        if (dataIt == document.MemberEnd() || !dataIt->value.IsArray())
+        {
+            return "Error: Invalid commodities data.";
+        }
+    }
 
-    std::vector<std::string> indicesSymbols;
-    std::vector<std::string> indicesNames;
-    std::vector<std::string> indicesDescriptions;
+    // Currency data
+    if (document.HasMember("currencies"))
+    {
+        dataIt = document.FindMember("currencies");
+        if (dataIt == document.MemberEnd() || !dataIt->value.IsArray())
+        {
+            return "Error: Invalid currency data.";
+        }
+    }
+
+    const rapidjson::Value &data = dataIt->value;
+
+    std::vector<std::string> symbols;
+    std::vector<std::string> names;
+    std::vector<std::string> descriptions;
 
     // Put data in vectors
-    for (rapidjson::SizeType i = 0; i < regionData.Size(); ++i)
+    for (rapidjson::SizeType i = 0; i < data.Size(); ++i)
     {
-        const rapidjson::Value &indexData = regionData[i];
-        if (indexData.HasMember("symbol") && indexData.HasMember("name") && indexData.HasMember("description"))
+        const rapidjson::Value &jsonData = data[i];
+        if (jsonData.HasMember("symbol") && jsonData.HasMember("name"))
         {
-            indicesSymbols.push_back(indexData["symbol"].GetString());
-            indicesNames.push_back(indexData["name"].GetString());
-            if (description)
+            symbols.push_back(jsonData["symbol"].GetString());
+            names.push_back(jsonData["name"].GetString());
+            if (description && jsonData.HasMember("description"))
             {
-                indicesDescriptions.push_back(indexData["description"].GetString());
+                descriptions.push_back(jsonData["description"].GetString());
             }
         }
     }
 
-    return getFormattedPrices(indicesSymbols, indicesNames, indicesDescriptions, markdown);
-}
-
-std::string getFormattedCommodities(const std::string &pathToJson, bool markdown)
-{
-    // Load JSON data from a file
-    std::ifstream file(pathToJson);
-    if (!file.is_open()) {
-        return "Error: Unable to open JSON file.";
-    }
-
-    // Read JSON data from the file
-    std::string jsonData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    file.close();
-
-    rapidjson::Document document;
-    document.Parse(jsonData.c_str());
-
-    if (!document.IsObject()) 
-    {
-        return "Error: Invalid JSON data.";
-    }
-
-    rapidjson::Value::ConstMemberIterator commodities = document.FindMember("commodities");
-    if (commodities == document.MemberEnd() || !commodities->value.IsArray()) 
-    {
-        return "Error: commodities data not found.";
-    }
-
-    const rapidjson::Value &commoditiesData = commodities->value;
-
-    std::vector<std::string> symbols;
-    std::vector<std::string> names;
-
-    // Put data in vectors
-    for (rapidjson::SizeType i = 0; i < commoditiesData.Size(); ++i) 
-    {
-        const rapidjson::Value &comData = commoditiesData[i];
-        if (comData.HasMember("symbol") && comData.HasMember("name")) 
-        {
-            symbols.push_back(comData["symbol"].GetString());
-            names.push_back(comData["name"].GetString());
-        }
-    }
-
-    return getFormattedPrices(symbols, names, {}, markdown);
+    return getFormattedPrices(symbols, names, descriptions, markdown);
 }

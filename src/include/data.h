@@ -114,22 +114,16 @@ std::string getFormattedStockMetrics(const std::string &symbol, bool markdown = 
 std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vector<std::string> indicesNames = {},
                                std::vector<std::string> indicesDescriptions = {}, bool markdown = false);
 
-/// This function reads JSON data containing major indices information for different regions
-/// from a JSON file. It extracts the symbols, names, and descriptions of major indices for the specified region, 
-/// and formats the data using Markdown syntax if requested. If an error occurs, it will return an error message.
-/// @param pathToJson Path to the JSON file.
+/// This function reads JSON data containing symbols, names and optionally descriptions of market related
+/// elements. It currently supports data about major indices (note: a region must be provided), commodities and currencies.
+/// It extracts the symbols and names (and descriptions) and formats the data using Markdown syntax if requested.  
+/// See the folder "data" for examples of JSON files that work with this function.
+/// If an error occurs, it will return an error message.
+/// @param pathToJson Path to the JSON file. Must contain one of the following members: "indices", "commodities", "currencies".
+/// @param markdown When set to true, the formatted string will contain Markdown syntax to make it more visually appealing.
+/// @param description When set to true, the descriptions provided in the JSON file will also be added to the formatted string.
 /// @param region The region for which to retrieve and format major indices data. Allowed values: "US", "EU", "Asia".
-/// @param description When set to true, a short description (one sentence) about the index will be added.
-/// @param markdown When set to true, the formatted string will contain Markdown syntax to make it more visually appealing.
-/// @return A string with the formatted price data and descriptions.
-std::string getFormattedMajorIndices(const std::string &pathToJson, const std::string &region, bool description, bool markdown = false);
-
-/// This function reads JSON data containing names and symbols of different commodities
-/// from a JSON file. It extracts the symbols and names and formats the data
-/// using Markdown syntax if requested. If an error occurs, it will return an error message.
-/// @param pathToJson Path to the JSON file.
-/// @param markdown When set to true, the formatted string will contain Markdown syntax to make it more visually appealing.
-/// @return A string with the formatted price data.
-std::string getFormattedCommodities(const std::string &pathToJson, bool markdown = false);
+/// @return A string with the formatted price data (and optionally descriptions).
+std::string getFormattedJSON(const std::string &pathToJson, bool markdown = false, bool description = false, const std::string &region = "");
 
 #endif // DATA_H
