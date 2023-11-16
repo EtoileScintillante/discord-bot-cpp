@@ -510,7 +510,7 @@ std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vec
     return formattedString.str();
 }
 
-std::string getFormattedJSON(const std::string &pathToJson, bool markdown, bool description, const std::string &region)
+std::string getFormattedJSON(const std::string &pathToJson, const std::string &key, bool markdown, bool description)
 {
     // Load JSON data from a file
     std::ifstream file(pathToJson);
@@ -531,36 +531,10 @@ std::string getFormattedJSON(const std::string &pathToJson, bool markdown, bool 
         return "Error: Invalid JSON data.";
     }
 
-    rapidjson::Value::ConstMemberIterator dataIt;
-
-    // Indices data
-    if (region != "")
+    rapidjson::Value::ConstMemberIterator dataIt = document.FindMember(key.c_str());
+    if (dataIt == document.MemberEnd() || !dataIt->value.IsArray())
     {
-        dataIt = document.FindMember(region.c_str());
-        if (dataIt == document.MemberEnd() || !dataIt->value.IsArray())
-        {
-            return "Error: Invalid region or region data.";
-        }
-    }
-
-    // Commodities data
-    if (document.HasMember("commodities"))
-    {
-        dataIt = document.FindMember("commodities");
-        if (dataIt == document.MemberEnd() || !dataIt->value.IsArray())
-        {
-            return "Error: Invalid commodities data.";
-        }
-    }
-
-    // Currency data
-    if (document.HasMember("currencies"))
-    {
-        dataIt = document.FindMember("currencies");
-        if (dataIt == document.MemberEnd() || !dataIt->value.IsArray())
-        {
-            return "Error: Invalid currency data.";
-        }
+        return "Error: Invalid key.";
     }
 
     const rapidjson::Value &data = dataIt->value;
