@@ -22,7 +22,7 @@
       },
       {
         "symbol": "^VIX",
-        "name": "CBOE Volatility Index",
+        "name": "CBOE Volatility Index (VIX)",
         "description": "A measure of market expectations of near-term volatility as conveyed by S&P 500 stock index option prices."
       }
     ],
@@ -48,9 +48,9 @@
         "description": "Tracks the performance of the 50 largest and most liquid stocks in the Eurozone."
       },
       {
-        "symbol": "FTSEMIB.MI",
-        "name": "FTSE MIB",
-        "description": "Measures the performance of the top 40 companies on the Borsa Italiana stock exchange."
+        "symbol": "^AEX",
+        "name": "AEX",
+        "description": "Tracks the 25 largest and most actively traded shares of the Dutch stock market."
       }
     ],
     "Asia": [
