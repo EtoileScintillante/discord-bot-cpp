@@ -1,0 +1,24 @@
+{
+    "currencies": [
+      {
+        "symbol": "EURUSD=X",
+        "name": "EUR/USD"
+      },
+      {
+        "symbol": "GBPUSD=X",
+        "name": "GBP/USD"
+      },
+      {
+        "symbol": "JPY=X",
+        "name": "USD/JPY"
+      },
+      {
+        "symbol": "EURGBP=X",
+        "name": "EUR/GBP"
+      },
+      {
+        "symbol": "DX-Y.NYB",
+        "name": "US Dollar Index"
+      }
+    ]
+  }
