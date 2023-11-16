@@ -25,6 +25,12 @@ Important to note is that data may be delayed.
 
 <img src="docs/majorindices.png" alt="indices US example" width="330" height="auto" />
 
+### /industries 
+  - Fetches latest price info for major companies of a certain industry
+  - Input: industry (e.g. Automotive, Technology, Oil and Gas, etc.)
+
+<img src="docs/industries.png" alt="industries example" width="auto" height="400" />
+
 ### /commodities
   - Fetches latest price data for different commodities, such as Crude Oil and Gold
 
