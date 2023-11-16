@@ -143,11 +143,15 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         std::string region = std::get<std::string>(event.get_parameter("region"));
         std::string description = std::get<std::string>(event.get_parameter("description"));
         bool showDesc = (description == "n") ? false : true;
-        event.reply(getFormattedMajorIndices("../data/indices.json", region, showDesc, true));
+        event.reply(getFormattedJSON("../data/indices.json", true, showDesc, region));
     }
     else if (event.command.get_command_name() == "commodities")
     {
-        event.reply(getFormattedCommodities("../data/commodities.json", true));
+        event.reply(getFormattedJSON("../data/commodities.json", true));
+    }
+    else if (event.command.get_command_name() == "currencies")
+    {
+        event.reply(getFormattedJSON("../data/currencies.json", true));
     }
 }
 
@@ -224,6 +228,9 @@ void Bot::registerCommands()
     // Create slash command for commodities
     dpp::slashcommand commodities("commodities", "Get the latest prices of different commodities", bot.me.id);
 
+    // Create slash command for currencies
+    dpp::slashcommand currencies("currencies", "Get the the latest currency rates and USD index ", bot.me.id);
+
     // Add commands to vector and register them
     std::vector<dpp::slashcommand> commands;
     commands.push_back(latestprice);
@@ -232,5 +239,6 @@ void Bot::registerCommands()
     commands.push_back(majorindices);
     commands.push_back(metrics);
     commands.push_back(commodities);
+    commands.push_back(currencies);
     bot.global_bulk_command_create(commands);
 }
