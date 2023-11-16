@@ -143,15 +143,20 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         std::string region = std::get<std::string>(event.get_parameter("region"));
         std::string description = std::get<std::string>(event.get_parameter("description"));
         bool showDesc = (description == "n") ? false : true;
-        event.reply(getFormattedJSON("../data/indices.json", true, showDesc, region));
+        event.reply(getFormattedJSON("../data/indices.json", region, true, showDesc));
     }
     else if (event.command.get_command_name() == "commodities")
     {
-        event.reply(getFormattedJSON("../data/commodities.json", true));
+        event.reply(getFormattedJSON("../data/commodities.json", "commodities", true));
     }
     else if (event.command.get_command_name() == "currencies")
     {
-        event.reply(getFormattedJSON("../data/currencies.json", true));
+        event.reply(getFormattedJSON("../data/currencies.json", "currencies", true));
+    }
+    else if (event.command.get_command_name() == "industries")
+    {
+        std::string industry = std::get<std::string>(event.get_parameter("industry"));
+        event.reply(getFormattedJSON("../data/industries.json", industry, true));
     }
 }
 
@@ -231,6 +236,19 @@ void Bot::registerCommands()
     // Create slash command for currencies
     dpp::slashcommand currencies("currencies", "Get the the latest currency rates and USD index ", bot.me.id);
 
+    // Create slash command for industries
+    dpp::slashcommand industries("industries", "Get latest price info for major companies of a certain industry", bot.me.id);
+    industries.add_option(
+        dpp::command_option(dpp::co_string, "industry", "Industry", true).
+        add_choice(dpp::command_option_choice("Technology", std::string("Technology"))).
+        add_choice(dpp::command_option_choice("Automotive", std::string("Automotive"))).
+        add_choice(dpp::command_option_choice("Oil and Gas", std::string("Oil and Gas"))).
+        add_choice(dpp::command_option_choice("Chip Companies", std::string("Chip Companies"))).
+        add_choice(dpp::command_option_choice("Financial Services", std::string("Financial Services"))).
+        add_choice(dpp::command_option_choice("Consumer Goods (Retail)", std::string("Consumer Goods"))).
+        add_choice(dpp::command_option_choice("Entertainment and Media", std::string("Entertainment and Media"))).
+        add_choice(dpp::command_option_choice("Pharmaceuticals and Healthcare", std::string("Pharmaceuticals and Healthcare"))));
+
     // Add commands to vector and register them
     std::vector<dpp::slashcommand> commands;
     commands.push_back(latestprice);
@@ -240,5 +258,6 @@ void Bot::registerCommands()
     commands.push_back(metrics);
     commands.push_back(commodities);
     commands.push_back(currencies);
+    commands.push_back(industries);
     bot.global_bulk_command_create(commands);
 }
