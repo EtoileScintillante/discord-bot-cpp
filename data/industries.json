@@ -1,0 +1,182 @@
+{
+    "Technology": [
+        {
+            "symbol": "AAPL",
+            "name": "Apple Inc."
+        },
+        {
+            "symbol": "MSFT",
+            "name": "Microsoft Corporation"
+        },
+        {
+            "symbol": "GOOGL",
+            "name": "Alphabet Inc."
+        },
+        {
+            "symbol": "AMZN",
+            "name": "Amazon.com Inc."
+        },
+        {
+            "symbol": "META",
+            "name": "Meta Platforms, Inc."
+        }
+    ],
+    "Automotive": [
+        {
+            "symbol": "VOW3.DE",
+            "name": "Volkswagen AG"
+        },
+        {
+            "symbol": "TM",
+            "name": "Toyota Motor Corporation"
+        },
+        {
+            "symbol": "GM",
+            "name": "General Motors Company"
+        },
+        {
+            "symbol": "F",
+            "name": "Ford Motor Company"
+        },
+        {
+            "symbol": "STLA",
+            "name": "Stellantis."
+        },
+        {
+            "symbol": "TSLA",
+            "name": "Tesla, Inc."
+        }
+    ],
+    "Pharmaceuticals and Healthcare": [
+        {
+            "symbol": "JNJ",
+            "name": "Johnson & Johnson"
+        },
+        {
+            "symbol": "PFE",
+            "name": "Pfizer Inc."
+        },
+        {
+            "symbol": "ROG",
+            "name": "Roche Holding AG"
+        },
+        {
+            "symbol": "NVS",
+            "name": "Novartis AG"
+        },
+        {
+            "symbol": "MRK",
+            "name": "Merck & Co., Inc."
+        }
+    ],
+    "Oil and Gas": [
+        {
+            "symbol": "XOM",
+            "name": "Exxon Mobil Corporation"
+        },
+        {
+            "symbol": "SHELL.AS",
+            "name": "Shell PLC"
+        },
+        {
+            "symbol": "CVX",
+            "name": "Chevron Corporation"
+        },
+        {
+            "symbol": "BP",
+            "name": "BP PLC."
+        },
+        {
+            "symbol": "TTE",
+            "name": "TotalEnergies SE"
+        }
+    ],
+    "Financial Services": [
+        {
+            "symbol": "JPM",
+            "name": "JPMorgan Chase & Co."
+        },
+        {
+            "symbol": "BAC",
+            "name": "Bank of America Corporation"
+        },
+        {
+            "symbol": "WFC",
+            "name": "Wells Fargo & Co."
+        },
+        {
+            "symbol": "V",
+            "name": "Visa Inc."
+        },
+        {
+            "symbol": "MA",
+            "name": "Mastercard Incorporated"
+        }
+    ],
+    "Consumer Goods": [
+        {
+            "symbol": "WMT",
+            "name": "Walmart Inc."
+        },
+        {
+            "symbol": "PG",
+            "name": "The Procter & Gamble Company"
+        },
+        {
+            "symbol": "KO",
+            "name": "The Coca-Cola Company"
+        },
+        {
+            "symbol": "NSRGF",
+            "name": "Nestlé S.A."
+        },
+        {
+            "symbol": "UL",
+            "name": "Unilever PLC"
+        }
+    ],
+    "Entertainment and Media": [
+        {
+            "symbol": "DIS",
+            "name": "The Walt Disney Company"
+        },
+        {
+            "symbol": "NFLX",
+            "name": "Netflix, Inc."
+        },
+        {
+            "symbol": "CMCSA",
+            "name": "Comcast Corporation"
+        },
+        {
+            "symbol": "SPOT",
+            "name": "Spotify Technology S.A."
+        },
+        {
+            "symbol": "TCEHY",
+            "name": "Tencent Holdings Limited"
+        }
+    ],
+    "Chip Companies": [
+        {
+            "symbol": "INTC",
+            "name": "Intel Corporation"
+        },
+        {
+            "symbol": "AMD",
+            "name": "Advanced Micro Devices, Inc."
+        },
+        {
+            "symbol": "NVDA",
+            "name": "NVIDIA Corporation"
+        },
+        {
+            "symbol": "ARM",
+            "name": "ARM Holdings PLC"
+        },
+        {
+            "symbol": "ASML",
+            "name": "ASML Holding N.V."
+        }
+    ]
+}
