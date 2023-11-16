@@ -30,6 +30,11 @@ Important to note is that data may be delayed.
 
 <img src="docs/commodities.png" alt="commodities example" width="auto" height="420" />
 
+### /currencies
+  - Fetches latest currency rates and US Dollar index
+
+<img src="docs/currencies.png" alt="currencies example" width="330" height="auto" />
+
 ### /pricegraph 
   - Fetches price data and plots the open and/or close prices
   - Input: equity symbol, period (e.g. 6 months, 2 weeks, etc.), mode (only open/only close/both)
