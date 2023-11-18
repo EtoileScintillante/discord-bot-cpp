@@ -21,14 +21,14 @@
 #include <iomanip>
 #include "rapidjson/document.h"
 
-// Struct with stock metrics
-// Note that this can also be used for futures and indices, but in that case some attributes will remain empty
-struct StockMetrics
+// Struct with equity metrics
+// Note that this can also be used for futures, indices and crypto, but in that case some attributes will remain empty
+struct Metrics
 {
-    std::string name = "-";      // Name of stock(company)/future/index (extracted from "displayName", or else from "shortName", which is usually the case with futures/indices)
+    std::string name = "-";      // Name of stock/future/index/crypto (extracted from "displayName", or else from "shortName", which is usually the case with futures/indices)
     std::string currency = "-";  // Currency
     std::string symbol = "-";    // Symbol
-    double marketCap = 0;        // Market capitalization of the company's outstanding shares (amount of shares * price of share)
+    double marketCap = 0;        // Market capitalization, i.e. amount of shares (or coins in case of crypto) * price
     double dividendYield = 0;    // Dividend yield as a percentage
     double peRatio = 0;          // Price-to-earnings ratio (P/E ratio) indicating stock valuation
     double latestPrice = 0;      // Latest price
@@ -68,7 +68,7 @@ static std::string httpGet(const std::string &url);
 
 /// Function to fetch historical stock/future/index data from Yahoo Finance and store OHLC data (and dates and volumes) in a 2D vector.
 /// The interval of the data is one day.
-/// @param symbol The symbol of the stock/future/index.
+/// @param symbol The symbol of the stock/future/index/crypto.
 /// @param duration The duration/period in the format: 1y, 6mo, 3mo, 2mo, 1mo, 3w, 2w, or 1w.
 /// @return A 2D vector where each row contains the following data: date, open, high, low, close, volume (in that order).
 /// @note Function is named fetch*OHLC*Data but this also includes dates (in format y/m/d) and volumes.
@@ -77,42 +77,42 @@ std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, c
 /// Function to fetch the latest price and % of change compared to the opening price of a stock/future/index from Yahoo Finance.
 /// Data will be returned in a string as follows: "The latest price of {symbol}: {latestPrice} (%change)".
 /// If something went wrong, it will return the following string: "Could not fetch latest price data. Symbol may be invalid."
-/// @param symbol The symbol of the stock/future/index.
+/// @param symbol The symbol of the stock/future/index/crypto.
 /// @param markdown When set to true, the formatted string contains Markdown syntax to make it more visually appealing.
 /// @return A string containing the latest price and % change information.
 std::string getFormattedStockPrice(const std::string &symbol, bool markdown = false);
 
-/// Function to fetch historical stock/future/index data from Yahoo Finance and write to a txt file.
+/// Function to fetch historical stock/future/index/crypto data from Yahoo Finance and write to a txt file.
 /// The txt file will be named {symbol}_{duration}.txt and will be saved in the "data" folder.
 /// The interval of the data is one day.
-/// @param symbol The symbol of the stock/future/index.
+/// @param symbol The symbol of the stock/future/index/crypto.
 /// @param duration The duration string in the format: 1y, 6mo, 3mo, 2mo, 1mo, 3w, 2w, or 1w.
-void fetchAndWriteStockData(const std::string &symbol, const std::string &duration);
+void fetchAndWriteEquityData(const std::string &symbol, const std::string &duration);
 
-/// Function to fetch stock/future/index metrics from Yahoo Finance API for a single symbol.
-/// @param symbol The symbol of the stock/future/index.
+/// Function to fetch stock/future/index/crypto metrics from Yahoo Finance API for a single symbol.
+/// @param symbol The symbol of the stock/future/index/crypto.
 /// @return StockMetrics struct containing price info, dividend yield, market capitalization and more.
-StockMetrics fetchStockMetrics(const std::string &symbol);
+Metrics fetchMetrics(const std::string &symbol);
 
-/// Function to get stock/future/index metrics in a readable way.
+/// Function to get stock/future/index/crypto metrics in a readable way.
 /// When data is not available, it will return "Could not fetch data. Symbol may be invalid.".
-/// @param symbol The symbol of the stock/future/index.
+/// @param symbol The symbol of the stock/future/index/crypto.
 /// @param markdown When set to true, the formatted string contains Markdown syntax to make it more visually appealing.
 /// @return A string with the metrics.
-std::string getFormattedStockMetrics(const std::string &symbol, bool markdown = false);
+std::string getFormattedMetrics(const std::string &symbol, bool markdown = false);
 
 /// Function that takes a vector of symbols, loops over all of them and fetches their latest price data.
 /// It then formats the data (latest price + percentage of change compared to open price) in a readable way.
 /// If no symbols are provided, it will return "No data available.".
 /// If it cannot fetch the data (for example if a symbol is invalid), the formatted string will not contain any info about that symbol.
 /// Meaning that if it could not fetch any data at all, the returned string will be empty.
-/// @param indicesSymbols Vector of stock/index/future symbols.
-/// @param indicesNames Vector of names of the stocks(companies)/futures/indices. If names are given, they will be added instead of the symbols.
-/// @param indicesDescriptions Vector of descriptions of the stocks(companies)/futures/indices. These will be added under the symbol (or name).
+/// @param symbols Vector of stock/index/future/crypto symbols.
+/// @param names Vector of names of the stocks/futures/indices/crypto. If names are given, they will be added instead of the symbols.
+/// @param descriptions Vector of descriptions of the stocks/futures/indices/crypto. These will be added under the symbol (or name).
 /// @param markdown When set to true, the formatted string will contain Markdown syntax to make it more visually appealing.
 /// @return A string with the formatted price data (and optionally descriptions).
-std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vector<std::string> indicesNames = {},
-                               std::vector<std::string> indicesDescriptions = {}, bool markdown = false);
+std::string getFormattedPrices(std::vector<std::string> symbols, std::vector<std::string> names = {},
+                               std::vector<std::string> descriptions = {}, bool markdown = false);
 
 /// This function reads JSON data containing symbols, names and optionally descriptions of things related to
 /// financial markets. It extracts the symbols and names (and descriptions) and formats the data using 

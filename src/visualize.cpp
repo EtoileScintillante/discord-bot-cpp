@@ -64,7 +64,7 @@ void priceGraph(const std::vector<std::vector<std::string>> &ohlcData, int mode)
 
     matplot::figure()->quiet_mode(true);
     matplot::hold(matplot::on);
-    matplot::xlim({-1, xAxis[xAxis.size()-1]+1}); // Small offset from edges of figure, to make sure the price line(s) does not cross the axis
+    matplot::xlim({-1, xAxis[xAxis.size()-1]+1}); // Small offset from edges of figure, to make sure the line(s) does not cross the axis
 
     if (mode == 1 || mode == 3)
     {

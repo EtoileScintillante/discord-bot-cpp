@@ -111,7 +111,7 @@ std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, c
                       "?period1=" + startTimestamp.str() + "&period2=" + endTimestamp.str() +
                       "&interval=1d&events=history";
 
-    // Fetch historical stock data using the URL
+    // Fetch historical price data using the URL
     std::string response = httpGet(url);
 
     // Check if response contains an error or is empty
@@ -158,10 +158,10 @@ std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, c
 std::string getFormattedStockPrice(const std::string &symbol, bool markdown)
 {
     // Also fetch metrics to get the currency
-    StockMetrics stockMetrics = fetchStockMetrics(symbol);
+    Metrics equityMetrics = fetchMetrics(symbol);
 
     // Check if there is a price
-    if (stockMetrics.latestPrice == 0)
+    if (equityMetrics.latestPrice == 0)
     {
         return "Could not fetch latest price data. Symbol may be invalid.";
     }
@@ -170,28 +170,28 @@ std::string getFormattedStockPrice(const std::string &symbol, bool markdown)
     std::ostringstream resultStream;
     if (!markdown)
     {
-        resultStream << "Latest Price for " << stockMetrics.name << ": " << std::fixed << std::setprecision(2) << stockMetrics.latestPrice << " " << stockMetrics.currency
-                     << " (" << (stockMetrics.latestChange >= 0 ? "+" : "") << std::fixed << std::setprecision(2) << stockMetrics.latestChange << "%)";
+        resultStream << "Latest Price for " << equityMetrics.name << ": " << std::fixed << std::setprecision(2) << equityMetrics.latestPrice << " " << equityMetrics.currency
+                     << " (" << (equityMetrics.latestChange >= 0 ? "+" : "") << std::fixed << std::setprecision(2) << equityMetrics.latestChange << "%)";
     }
     else
     {
-        resultStream << "### Latest Price for " << stockMetrics.name << "\n"
-                     << "`" << std::fixed << std::setprecision(2) << stockMetrics.latestPrice << " " << stockMetrics.currency;
+        resultStream << "### Latest Price for " << equityMetrics.name << "\n"
+                     << "`" << std::fixed << std::setprecision(2) << equityMetrics.latestPrice << " " << equityMetrics.currency;
 
-        if (stockMetrics.latestChange >= 0)
+        if (equityMetrics.latestChange >= 0)
         {
-            resultStream << " (+" << std::fixed << std::setprecision(2) << stockMetrics.latestChange << "%)`:chart_with_upwards_trend:";
+            resultStream << " (+" << std::fixed << std::setprecision(2) << equityMetrics.latestChange << "%)`:chart_with_upwards_trend:";
         }
         else
         {
-            resultStream << " (" << std::fixed << std::setprecision(2) << stockMetrics.latestChange << "%)`:chart_with_downwards_trend:";
+            resultStream << " (" << std::fixed << std::setprecision(2) << equityMetrics.latestChange << "%)`:chart_with_downwards_trend:";
         }
     }
 
     return resultStream.str();
 }
 
-void fetchAndWriteStockData(const std::string &symbol, const std::string &duration)
+void fetchAndWriteEquityData(const std::string &symbol, const std::string &duration)
 {
     // Define the current timestamp as the end time
     std::time_t endTime = std::time(nullptr);
@@ -210,12 +210,12 @@ void fetchAndWriteStockData(const std::string &symbol, const std::string &durati
     startTimestamp << startTime;
     endTimestamp << endTime;
 
-    // Build the URL for historical stock data
+    // Build the URL for historical data
     std::string url = "https://query1.finance.yahoo.com/v7/finance/download/" + symbol +
                       "?period1=" + startTimestamp.str() + "&period2=" + endTimestamp.str() +
                       "&interval=1d&events=history";
 
-    // Fetch historical stock data using the URL
+    // Fetch historical data using the URL
     std::string response = httpGet(url);
 
     // Check if response contains an error or is empty
@@ -256,9 +256,9 @@ void fetchAndWriteStockData(const std::string &symbol, const std::string &durati
     outFile.close();
 }
 
-StockMetrics fetchStockMetrics(const std::string &symbol)
+Metrics fetchMetrics(const std::string &symbol)
 {
-    StockMetrics stockMetrics;
+    Metrics equityMetrics;
 
     // Construct the Yahoo Finance API URL with the symbol
     std::string apiUrl = "https://query1.finance.yahoo.com/v7/finance/options/" + symbol;
@@ -270,12 +270,12 @@ StockMetrics fetchStockMetrics(const std::string &symbol)
     if (response.find("{\"optionChain\":{\"result\":[],\"error\":null}}") != std::string::npos)
     {
         std::cerr << "Symbol not found or delisted: " << symbol << std::endl;
-        return stockMetrics;
+        return equityMetrics;
     }
     if (response.empty())
     {
         std::cerr << "Failed to fetch data from the server." << std::endl;
-        return stockMetrics;
+        return equityMetrics;
     }
 
     // Parse the JSON response
@@ -290,75 +290,75 @@ StockMetrics fetchStockMetrics(const std::string &symbol)
         // Extract metrics from quote object
         if (quote.HasMember("displayName") && quote["displayName"].IsString()) // name from displayName
         {
-            stockMetrics.name = quote["displayName"].GetString();
+            equityMetrics.name = quote["displayName"].GetString();
         }
         else if ((quote.HasMember("shortName") && quote["shortName"].IsString())) // name from shortName
         {
-            stockMetrics.name = quote["shortName"].GetString();
+            equityMetrics.name = quote["shortName"].GetString();
         }
         if (quote.HasMember("symbol") && quote["symbol"].IsString()) // symbol
         {
-            stockMetrics.symbol = quote["symbol"].GetString();
+            equityMetrics.symbol = quote["symbol"].GetString();
         }
         if (quote.HasMember("currency") && quote["currency"].IsString()) // currency
         {
-            stockMetrics.currency = quote["currency"].GetString();
+            equityMetrics.currency = quote["currency"].GetString();
         }
         if (quote.HasMember("marketCap") && quote["marketCap"].IsNumber()) // marketCap
         {
-            stockMetrics.marketCap = quote["marketCap"].GetDouble();
+            equityMetrics.marketCap = quote["marketCap"].GetDouble();
         }
         if (quote.HasMember("dividendYield") && quote["dividendYield"].IsNumber()) // dividendYield
         {
-            stockMetrics.dividendYield = quote["dividendYield"].GetDouble();
+            equityMetrics.dividendYield = quote["dividendYield"].GetDouble();
         }
         if (quote.HasMember("trailingPE") && quote["trailingPE"].IsNumber()) // peRatio
         {
-            stockMetrics.peRatio = quote["trailingPE"].GetDouble();
+            equityMetrics.peRatio = quote["trailingPE"].GetDouble();
         }
         if (quote.HasMember("regularMarketPrice") && quote["regularMarketPrice"].IsNumber()) // latestPrice
         {
-            stockMetrics.latestPrice = quote["regularMarketPrice"].GetDouble();
+            equityMetrics.latestPrice = quote["regularMarketPrice"].GetDouble();
         }
         if (quote.HasMember("regularMarketChangePercent") && quote["regularMarketChangePercent"].IsNumber()) // latestChange
         {
-            stockMetrics.latestChange = quote["regularMarketChangePercent"].GetDouble();
+            equityMetrics.latestChange = quote["regularMarketChangePercent"].GetDouble();
         }
         if (quote.HasMember("regularMarketOpen") && quote["regularMarketOpen"].IsNumber()) // openPrice
         {
-            stockMetrics.openPrice = quote["regularMarketOpen"].GetDouble();
+            equityMetrics.openPrice = quote["regularMarketOpen"].GetDouble();
         }
         if (quote.HasMember("regularMarketDayLow") && quote["regularMarketDayLow"].IsNumber()) // dayLow
         {
-            stockMetrics.dayLow = quote["regularMarketDayLow"].GetDouble();
+            equityMetrics.dayLow = quote["regularMarketDayLow"].GetDouble();
         }
         if (quote.HasMember("regularMarketDayHigh") && quote["regularMarketDayHigh"].IsNumber()) // dayHigh
         {
-            stockMetrics.dayHigh = quote["regularMarketDayHigh"].GetDouble();
+            equityMetrics.dayHigh = quote["regularMarketDayHigh"].GetDouble();
         }
         if (quote.HasMember("regularMarketPreviousClose") && quote["regularMarketPreviousClose"].IsNumber()) // prevClose
         {
-            stockMetrics.prevClose = quote["regularMarketPreviousClose"].GetDouble();
+            equityMetrics.prevClose = quote["regularMarketPreviousClose"].GetDouble();
         }
         if (quote.HasMember("fiftyTwoWeekLow") && quote["fiftyTwoWeekLow"].IsNumber()) // fiftyTwoWeekLow
         {
-            stockMetrics.fiftyTwoWeekLow = quote["fiftyTwoWeekLow"].GetDouble();
+            equityMetrics.fiftyTwoWeekLow = quote["fiftyTwoWeekLow"].GetDouble();
         }
         if (quote.HasMember("fiftyTwoWeekHigh") && quote["fiftyTwoWeekHigh"].IsNumber()) // fiftyTwoWeekHigh
         {
-            stockMetrics.fiftyTwoWeekHigh = quote["fiftyTwoWeekHigh"].GetDouble();
+            equityMetrics.fiftyTwoWeekHigh = quote["fiftyTwoWeekHigh"].GetDouble();
         }
         if (quote.HasMember("fiftyDayAverage") && quote["fiftyDayAverage"].IsNumber()) // avg_50
         {
-            stockMetrics.avg_50 = quote["fiftyDayAverage"].GetDouble();
+            equityMetrics.avg_50 = quote["fiftyDayAverage"].GetDouble();
         }
         if (quote.HasMember("twoHundredDayAverage") && quote["twoHundredDayAverage"].IsNumber()) // avg_200
         {
-            stockMetrics.avg_200 = quote["twoHundredDayAverage"].GetDouble();
+            equityMetrics.avg_200 = quote["twoHundredDayAverage"].GetDouble();
         }
         if (quote.HasMember("averageDailyVolume3Month") && quote["averageDailyVolume3Month"].IsNumber()) // avgVol_3mo
         {
-            stockMetrics.avgVol_3mo = quote["averageDailyVolume3Month"].GetDouble();
+            equityMetrics.avgVol_3mo = quote["averageDailyVolume3Month"].GetDouble();
         }
     }
     else
@@ -366,13 +366,13 @@ StockMetrics fetchStockMetrics(const std::string &symbol)
         std::cerr << "JSON parsing error or missing member" << std::endl;
     }
 
-    return stockMetrics;
+    return equityMetrics;
 }
 
-std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
+std::string getFormattedMetrics(const std::string &symbol, bool markdown)
 {
-    // Fetch stock metrics for the given symbol
-    StockMetrics metrics = fetchStockMetrics(symbol);
+    // Fetch metrics for the given symbol
+    Metrics metrics = fetchMetrics(symbol);
 
     // Check if data is valid
     if (metrics.symbol == "-")
@@ -383,7 +383,7 @@ std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
     // Create a string stream to hold the formatted metrics
     std::ostringstream formattedMetrics;
 
-    // Format the stock metrics
+    // Format the metrics
     if (!markdown)
     {
         formattedMetrics << "Metrics for " << metrics.name << ":\n";
@@ -427,10 +427,10 @@ std::string getFormattedStockMetrics(const std::string &symbol, bool markdown)
     return formattedMetrics.str();
 }
 
-std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vector<std::string> indicesNames, std::vector<std::string> indicesDescriptions, bool markdown)
+std::string getFormattedPrices(std::vector<std::string> symbols, std::vector<std::string> names, std::vector<std::string> descriptions, bool markdown)
 {
     // Check if data is available
-    if (indicesSymbols.empty())
+    if (symbols.empty())
     {
         return "No data available.";
     }
@@ -438,36 +438,36 @@ std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vec
     // Check if there are names and descriptions available
     bool addNames = false;
     bool addDescription = false;
-    if ((!indicesNames.empty()) && (indicesNames.size() == indicesSymbols.size()))
+    if ((!names.empty()) && (names.size() == symbols.size()))
     {
         addNames = true;
     }
-    if ((!indicesDescriptions.empty()) && (indicesDescriptions.size() == indicesSymbols.size()))
+    if ((!descriptions.empty()) && (descriptions.size() == symbols.size()))
     {
         addDescription = true;
     }
 
     std::ostringstream formattedString;
 
-    for (int i = 0; i < indicesSymbols.size(); i++)
+    for (int i = 0; i < symbols.size(); i++)
     {
         // First fetch price data
-        StockMetrics data = fetchStockMetrics(indicesSymbols[i]);
+        Metrics data = fetchMetrics(symbols[i]);
 
         // Now create string
         if (!markdown)
         {
             if (addNames) // Display name
             {
-                formattedString << indicesNames[i] << std::endl;
+                formattedString << names[i] << std::endl;
             }
             else // Otherwise just add the symbol
             {
-                formattedString << indicesSymbols[i] << std::endl;
+                formattedString << symbols[i] << std::endl;
             }
             if (addDescription) // Add description if available
             {
-                formattedString << indicesDescriptions[i] << std::endl;
+                formattedString << descriptions[i] << std::endl;
             }
             formattedString << std::fixed << std::setprecision(2);
             formattedString << "- Latest price: " << data.latestPrice << " " << data.currency;
@@ -484,15 +484,15 @@ std::string getFormattedPrices(std::vector<std::string> indicesSymbols, std::vec
         {
             if (addNames) // Display name
             {
-                formattedString << "### " << indicesNames[i] << std::endl;
+                formattedString << "### " << names[i] << std::endl;
             }
             else // Otherwise just add the symbol
             {
-                formattedString << "### " << indicesSymbols[i] << std::endl;
+                formattedString << "### " << symbols[i] << std::endl;
             }
             if (addDescription) // Add description if available
             {
-                formattedString << indicesDescriptions[i] << std::endl;
+                formattedString << descriptions[i] << std::endl;
             }
             formattedString << std::fixed << std::setprecision(2);
             formattedString << "- Latest price: `" << data.latestPrice << " " << data.currency;
