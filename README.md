@@ -1,7 +1,7 @@
 # equity-bot-discord
 [![macOS Build Status](https://github.com/EtoileScintillante/equity-bot-discord/workflows/Build-macOS/badge.svg)](https://github.com/EtoileScintillante/equity-bot-discord/actions)  
 Discord bot written in C++ with the [D++/DPP library](https://github.com/brainboxdotcc/DPP).  
-It can fetch equity (stock/future/index) data and visualize it.  
+It can fetch equity (stock/future/index/crypto) data and visualize it.  
 All data is fetched from [Yahoo Finance](https://finance.yahoo.com).   
 Important to note is that data may be delayed.
 
@@ -40,6 +40,11 @@ Important to note is that data may be delayed.
   - Fetches latest currency rates and US Dollar index
 
 <img src="docs/currencies.png" alt="currencies example" width="330" height="auto" />
+
+### /crypto
+  - Fetches latest price data for the 5 biggest cryptocurrencies (based on market capitalization)
+
+<img src="docs/crypto.png" alt="crypto example" width="330" height="auto" />
 
 ### /pricegraph 
   - Fetches price data and plots the open and/or close prices
