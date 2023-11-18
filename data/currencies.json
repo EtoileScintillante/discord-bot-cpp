@@ -20,5 +20,27 @@
         "symbol": "DX-Y.NYB",
         "name": "US Dollar Index"
       }
+    ],
+    "cryptocurrencies": [
+      {
+        "symbol": "BTC-USD",
+        "name": "Bitcoin"
+      },
+      {
+        "symbol": "ETH-USD",
+        "name": "Ethereum"
+      },
+      {
+        "symbol": "USDT-USD",
+        "name": "Tether"
+      },
+      {
+        "symbol": "BNB-USD",
+        "name": "Binance Coin"
+      },
+      {
+        "symbol": "XRP-USD",
+        "name": "XRP"
+      }
     ]
   }
