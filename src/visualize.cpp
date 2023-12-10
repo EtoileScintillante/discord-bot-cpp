@@ -1,7 +1,10 @@
 #include "visualize.h"
 
-void priceGraph(const std::vector<std::vector<std::string>> &ohlcData, int mode)
+void priceGraph(std::string symbol, std::string duration, int mode)
 {
+    // Fetch data
+    Metrics data = fetchMetrics(symbol);
+    std::vector<std::vector<std::string>> ohlcData = fetchOHLCData(symbol, duration);
     if (ohlcData.empty())
     {
         std::cerr << "No price data available." << std::endl;
@@ -61,8 +64,14 @@ void priceGraph(const std::vector<std::vector<std::string>> &ohlcData, int mode)
             xtickLabels.push_back(dates[i]); // Use selected dates as x-tick labels
         }
     }
-
-    matplot::figure()->quiet_mode(true);
+    
+    // Create the price graph
+    auto fig = matplot::figure(true);
+    fig->quiet_mode(true);
+    if (dates.size() > 100)
+    {
+        fig->size(900, 600); // Bigger graph for longer periods
+    }
     matplot::hold(matplot::on);
     matplot::xlim({-1, xAxis[xAxis.size()-1]+1}); // Small offset from edges of figure, to make sure the line(s) does not cross the axis
 
@@ -77,6 +86,7 @@ void priceGraph(const std::vector<std::vector<std::string>> &ohlcData, int mode)
     }
 
     ::matplot::legend({});
+    matplot::ylabel("Price in " + data.currency);
     matplot::xticks(xTicks);
     matplot::xticklabels(xtickLabels);
     matplot::xtickangle(35);
@@ -94,8 +104,12 @@ void priceGraph(const std::vector<std::vector<std::string>> &ohlcData, int mode)
     // matplot::show();
 }
 
-void createCandle(const std::vector<std::vector<std::string>> &ohlcData)
+void createCandle(std::string symbol, std::string duration)
 {
+    // Fetch data
+    Metrics data = fetchMetrics(symbol);
+    std::vector<std::vector<std::string>> ohlcData = fetchOHLCData(symbol, duration);
+
     if (ohlcData.empty())
     {
         std::cerr << "No OHLC data available." << std::endl;
@@ -166,15 +180,20 @@ void createCandle(const std::vector<std::vector<std::string>> &ohlcData)
     }
 
     // Create the candlestick chart
-    matplot::figure()->quiet_mode(true);
+    auto fig = matplot::figure(true);
+    fig->quiet_mode(true);
+    if (dates.size() > 50)
+    {
+        fig->size(900, 600); // Bigger chart for longer periods
+    }
     matplot::hold(matplot::on);
     matplot::ylim({+lowestPrice * 0.99, +highestPrice * 1.01});
-    matplot::xlim({-1, xAxis[xAxis.size()-1]+1}); // Small offset from edges of figure, to make sure the first and last candle are not drawn in the axis
+    matplot::xlim({-1, xAxis[xAxis.size()-1]+1}); // Small offset to make sure the first and last candles are not drawn in the axis
 
     for (int i = 0; i < xAxis.size(); i++)
     {
         // Draw the vertical line (wick) of the candlestick
-        matplot::plot({xAxis[i], xAxis[i]}, {highPrices[i], lowPrices[i]})->line_width(1.2).color("black").marker(matplot::line_spec::marker_style::custom);//.marker_color("black").marker_size(6);
+        matplot::plot({xAxis[i], xAxis[i]}, {highPrices[i], lowPrices[i]})->line_width(1.2).color("black").marker(matplot::line_spec::marker_style::custom);
         
         // Calculate the top and bottom of the candlestick body
         double top = std::max(openingPrices[i], closingPrices[i]);
@@ -182,7 +201,7 @@ void createCandle(const std::vector<std::vector<std::string>> &ohlcData)
         
         // Draw the filled rectangle (candlestick body)
         float offsetX = 0.2;
-        auto r = matplot::rectangle(xAxis[i]-offsetX, bottom, offsetX * 2, (top-bottom)); // TODO FIX THIS!
+        auto r = matplot::rectangle(xAxis[i]-offsetX, bottom, offsetX * 2, (top-bottom));
         r->fill(true);
         r->color(candleColor[i]);
     }
@@ -191,6 +210,7 @@ void createCandle(const std::vector<std::vector<std::string>> &ohlcData)
     matplot::xticks(xTicks);
     matplot::xticklabels(xtickLabels);
     matplot::xtickangle(35);
+    matplot::ylabel("Price in " + data.currency);
 
     // Get the path to the "images" folder (assuming one level up from the executable)
     std::string exePath = std::filesystem::current_path().string();
@@ -205,8 +225,11 @@ void createCandle(const std::vector<std::vector<std::string>> &ohlcData)
     //matplot::show();
 }
 
-void createCandleAndVolume(const std::vector<std::vector<std::string>> &ohlcvData)
+void createCandleAndVolume(std::string symbol, std::string duration)
 {
+    // Fetch data
+    Metrics data = fetchMetrics(symbol);
+    std::vector<std::vector<std::string>> ohlcvData = fetchOHLCData(symbol, duration);
     if (ohlcvData.empty())
     {
         std::cout << "No OHLCV data available." << std::endl;
@@ -217,7 +240,7 @@ void createCandleAndVolume(const std::vector<std::vector<std::string>> &ohlcvDat
     std::vector<double> openingPrices, closingPrices, highPrices, lowPrices, volumes;
     std::vector<double> xAxis; // Needed for data plotting
 
-    // Extract OHLC data and fill xAxis vector (prices will be plotted against these points)
+    // Extract OHLCV data and fill xAxis vector (prices and volumes will be plotted against these points)
     double i = 0;
     for (const auto &row : ohlcvData)
     {
@@ -277,12 +300,17 @@ void createCandleAndVolume(const std::vector<std::vector<std::string>> &ohlcvDat
         }
     }
 
-    // Create the figure
-    matplot::figure()->quiet_mode(true);
+    // Create the candlestick chart
+    auto fig = matplot::figure(true);
+    fig->quiet_mode(true);
+    if (dates.size() > 50)
+    {
+        fig->size(900, 600); // Bigger chart for longer periods
+    }
     matplot::hold(matplot::on);
     matplot::ylim({+lowestPrice * 0.99, +highestPrice * 1.01});
-    matplot::ylabel("Price");
-    matplot::xlim({-1, xAxis[xAxis.size() - 1] + 1}); // To make sure the first and last candle are not in the axis
+    matplot::ylabel("Price in " + data.currency);
+    matplot::xlim({-1, xAxis[xAxis.size() - 1] + 1}); // Small offset to make sure the first and last candles are not in the axis
     matplot::xticks(xTicks);
     matplot::xticklabels(xtickLabels);
     matplot::xtickangle(35);
@@ -291,7 +319,7 @@ void createCandleAndVolume(const std::vector<std::vector<std::string>> &ohlcvDat
     for (int i = 0; i < xAxis.size(); i++)
     {
         // Draw the vertical line (wick) of the candlestick
-        matplot::plot({xAxis[i], xAxis[i]}, {highPrices[i], lowPrices[i]})->line_width(1.2).color("black").marker(matplot::line_spec::marker_style::custom); //.marker_color("black").marker_size(6);
+        matplot::plot({xAxis[i], xAxis[i]}, {highPrices[i], lowPrices[i]})->line_width(1.2).color("black").marker(matplot::line_spec::marker_style::custom);
 
         // Calculate the top and bottom of the candlestick body
         double top = std::max(openingPrices[i], closingPrices[i]);
@@ -299,7 +327,7 @@ void createCandleAndVolume(const std::vector<std::vector<std::string>> &ohlcvDat
 
         // Draw the filled rectangle (candlestick body)
         float offsetX = 0.2;
-        auto r = matplot::rectangle(xAxis[i] - offsetX, bottom, offsetX * 2, (top - bottom)); // TODO FIX THIS!
+        auto r = matplot::rectangle(xAxis[i] - offsetX, bottom, offsetX * 2, (top - bottom));
         r->fill(true);
         r->color(candleColor[i]);
     }
