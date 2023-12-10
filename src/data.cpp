@@ -6,45 +6,29 @@ static size_t WriteCallback(char *ptr, size_t size, size_t nmemb, std::string *u
     return size * nmemb;
 }
 
-std::time_t getDurationInSeconds(const std::string &duration)
+std::time_t getDurationInSeconds(const std::string &duration) 
 {
-    if (duration == "1y")
-    {
-        return 31536000; // 1 year in seconds
+    // This supports duration formats like 1d, 2 weeks, 1y, 3mo, 1 month, etc.
+    std::regex pattern(R"(\s*(\d+)\s*([yYmMdDwW]+(?:\w*)?)\s*)");
+    std::unordered_map<std::string, std::time_t> unitToSeconds = {
+        {"y", 31536000},  // year in seconds
+        {"m", 2592000},   // month in seconds
+        {"w", 604800},    // week in seconds
+        {"d", 86400}      // day in seconds
+    };
+
+    std::smatch match;
+    if (std::regex_match(duration, match, pattern)) {
+        int value = std::stoi(match[1]);
+        std::string unit = match[2].str();
+        unit = tolower(unit[0]); // Only interested in the first letter of the unit (y/m/w/d)
+        if (unitToSeconds.find(unit) != unitToSeconds.end()) {
+            return value * unitToSeconds[unit];
+        }
     }
-    else if (duration == "6mo")
-    {
-        return 15552000; // 6 months in seconds
-    }
-    else if (duration == "3mo")
-    {
-        return 7776000; // 3 months in seconds
-    }
-    else if (duration == "2mo")
-    {
-        return 5184000; // 2 months in seconds
-    }
-    else if (duration == "1mo")
-    {
-        return 2592000; // 1 month in seconds
-    }
-    else if (duration == "3w")
-    {
-        return 1814400; // 3 weeks in seconds
-    }
-    else if (duration == "2w")
-    {
-        return 1209600; // 2 weeks in seconds
-    }
-    else if (duration == "1w")
-    {
-        return 604800; // 1 week in seconds
-    }
-    else
-    {
-        std::cerr << "Invalid duration. Supported durations: 1y, 6mo, 3mo, 2mo, 1mo, 3w, 2w, and 1w." << std::endl;
-        return 0;
-    }
+
+    std::cerr << "Invalid duration format. Examples of supported formats: 7m, 1w, 3y, 6d, where m = month, w = week, y = year, and d = day." << std::endl;
+    return 0;
 }
 
 std::time_t convertToUnixTimestamp(const std::string &date)
@@ -97,7 +81,7 @@ std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, c
     startTime -= getDurationInSeconds(duration);
     if (startTime == endTime)
     {
-        std::cerr << "Invalid duration. Supported durations: 1y, 6mo, 3mo, 2mo, 1mo, 3w, 2w and 1w." << std::endl;
+        std::cerr << "Invalid duration format. Examples of supported formats: 7m, 1w, 3y, 6d, where m = month, w = week, y = year, and d = day." << std::endl;
         return std::vector<std::vector<std::string>>();
     }
 
@@ -106,7 +90,7 @@ std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, c
     startTimestamp << startTime;
     endTimestamp << endTime;
 
-    // Build the URL for historical stock data
+    // Build the URL for historical data
     std::string url = "https://query1.finance.yahoo.com/v7/finance/download/" + symbol +
                       "?period1=" + startTimestamp.str() + "&period2=" + endTimestamp.str() +
                       "&interval=1d&events=history";
@@ -155,9 +139,9 @@ std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, c
     return ohlcData;
 }
 
-std::string getFormattedStockPrice(const std::string &symbol, bool markdown)
+std::string getFormattedPrice(const std::string &symbol, bool markdown)
 {
-    // Also fetch metrics to get the currency
+    // Fetch data
     Metrics equityMetrics = fetchMetrics(symbol);
 
     // Check if there is a price
@@ -201,7 +185,7 @@ void fetchAndWriteEquityData(const std::string &symbol, const std::string &durat
     startTime -= getDurationInSeconds(duration);
     if (startTime == endTime)
     {
-        std::cerr << "Invalid duration. Supported durations: 1y, 6mo, 3mo, 2mo, 1mo, 3w, 2w and 1w." << std::endl;
+        std::cerr << "Invalid duration format. Examples of supported formats: 7m, 1w, 3y, 6d, where m = month, w = week, y = year, and d = day." << std::endl;
         return;
     }
 
@@ -303,6 +287,10 @@ Metrics fetchMetrics(const std::string &symbol)
         if (quote.HasMember("currency") && quote["currency"].IsString()) // currency
         {
             equityMetrics.currency = quote["currency"].GetString();
+        }
+        if (quote.HasMember("marketState") && quote["marketState"].IsString()) // marketState
+        {
+            equityMetrics.marketState = quote["marketState"].GetString();
         }
         if (quote.HasMember("marketCap") && quote["marketCap"].IsNumber()) // marketCap
         {
@@ -427,7 +415,7 @@ std::string getFormattedMetrics(const std::string &symbol, bool markdown)
     return formattedMetrics.str();
 }
 
-std::string getFormattedPrices(std::vector<std::string> symbols, std::vector<std::string> names, std::vector<std::string> descriptions, bool markdown)
+std::string getFormattedPrices(std::vector<std::string> symbols, std::vector<std::string> names, std::vector<std::string> descriptions, bool markdown, bool closedWarning)
 {
     // Check if data is available
     if (symbols.empty())
@@ -469,6 +457,10 @@ std::string getFormattedPrices(std::vector<std::string> symbols, std::vector<std
             {
                 formattedString << descriptions[i] << std::endl;
             }
+            if (closedWarning == true && data.marketState != "REGULAR") // Add note if market is not open
+            {
+                formattedString << "Note: market is currently closed" << std::endl;
+            }
             formattedString << std::fixed << std::setprecision(2);
             formattedString << "- Latest price: " << data.latestPrice << " " << data.currency;
             if (data.latestChange >= 0)
@@ -494,6 +486,10 @@ std::string getFormattedPrices(std::vector<std::string> symbols, std::vector<std
             {
                 formattedString << descriptions[i] << std::endl;
             }
+            if (closedWarning == true && data.marketState != "REGULAR") // Add note if market is not open
+            {
+                formattedString << "Note: market is currently closed" << std::endl;
+            }
             formattedString << std::fixed << std::setprecision(2);
             formattedString << "- Latest price: `" << data.latestPrice << " " << data.currency;
             if (data.latestChange >= 0)
@@ -510,7 +506,7 @@ std::string getFormattedPrices(std::vector<std::string> symbols, std::vector<std
     return formattedString.str();
 }
 
-std::string getFormattedJSON(const std::string &pathToJson, const std::string &key, bool markdown, bool description)
+std::string getFormattedJSON(const std::string &pathToJson, const std::string &key, bool markdown, bool description, bool closedWarning)
 {
     // Load JSON data from a file
     std::ifstream file(pathToJson);
@@ -558,5 +554,5 @@ std::string getFormattedJSON(const std::string &pathToJson, const std::string &k
         }
     }
 
-    return getFormattedPrices(symbols, names, descriptions, markdown);
+    return getFormattedPrices(symbols, names, descriptions, markdown, closedWarning);
 }
