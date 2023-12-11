@@ -38,40 +38,32 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         Metrics metrics = fetchMetrics(symbol);
         std::string name = metrics.name;
 
-        // Check if duration is valid and not too short
+        // Check if duration is valid and not too short, and add note if it is too short
         std::time_t duration = getDurationInSeconds(period);
+        std::string note = "";
         if (duration == 0)
         {
-            dpp::message errorMsg{"Invalid duration format. Examples of supported formats: 7mo, 1w, 3y, 6d, where mo = month, w = week, y = year, and d = day."};
+            dpp::message errorMsg{"Invalid period format. Examples of supported formats: 7mo, 1w, 3y, 6d, "
+                                  "where mo = month, w = week, y = year, and d = day."};
             event.reply(errorMsg);
         }
         if (duration < 259200)
         {
             period = "3 days";
+            note = "Note: period has been set to 3 days, because periods shorter than 3 days may result in an empty graph";
         }
-
         // Create graph
         priceGraph(symbol, period, std::stoi(mode));
 
         // Additional delay to make sure the file is fully written to disk
         // Without this delay the bot sends an empty image file
-        std::this_thread::sleep_for(std::chrono::milliseconds{500});
-
-        const std::string imagePath = "../images/price_graph.png";
-        const int maxAttempts = 5;
-        int attempts = 0;
-
-        // Check if the file exists
-        while (!std::filesystem::exists(imagePath) && attempts < maxAttempts)
-        {
-            attempts++;
-        }
+        std::this_thread::sleep_for(std::chrono::milliseconds{1000});
 
         // If the file exists, add it to the message
+        const std::string imagePath = "../images/price_graph.png";
         if (std::filesystem::exists(imagePath))
         {
             // Add note if the duration has been adjusted
-            std::string note = (duration < 259200) ? "Note: period has been set to 3 days, because periods shorter than 3 days may result in an empty graph" : "";
             dpp::message msg{"### Price Graph for " + name + "\n" + note};
             msg.add_file("price_graph.png", dpp::utility::read_file(imagePath));
             event.reply(msg);
@@ -84,8 +76,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
             // If the file doesn't exist, reply with an error message
             dpp::message errorMsg{"Oops! Something went wrong while creating the graph."};
             event.reply(errorMsg);
-        }
-        
+        }  
     }
     else if (event.command.get_command_name() == "candlestick")
     {
@@ -102,33 +93,24 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         std::string note = "";
         if (duration == 0)
         {
-            dpp::message errorMsg{"Invalid period format. Examples of supported formats: 7mo, 1w, 6d, where mo = month, w = week and d = day."};
+            dpp::message errorMsg{"Invalid period format. Examples of supported formats: 7mo, 1w, 3y, 6d, "
+                                  "where mo = month, w = week, y = year, and d = day."};
             event.reply(errorMsg);
         }
         if (duration > 31536000)
         {
             note = "To ensure readability of the chart, a period of longer than 1 year is not recommended.";
         }
-
         
         // Create candlestick chart
         (showV == "n") ? createCandle(symbol, period) : createCandleAndVolume(symbol, period);
         
         // Additional delay to make sure the file is fully written to disk
         // Without this delay the bot sends an empty image file
-        std::this_thread::sleep_for(std::chrono::milliseconds{500});
-
-        std::string imagePath = (showV == "n") ? "../images/candle_chart.png" : "../images/candle_volume.png";
-        const int maxAttempts = 5;
-        int attempts = 0;
-
-        // Check if the file exists
-        while (!std::filesystem::exists(imagePath) && attempts < maxAttempts)
-        {
-            attempts++;
-        }
+        std::this_thread::sleep_for(std::chrono::milliseconds{1000});
 
         // If the file exists, add it to the message
+        std::string imagePath = (showV == "n") ? "../images/candle_chart.png" : "../images/candle_volume.png";
         if (std::filesystem::exists(imagePath))
         {
             dpp::message msg{"### Candlestick chart for " + name + "\n" + note};
@@ -144,7 +126,6 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
             dpp::message errorMsg{"Oops! Something went wrong while creating the candlestick chart."};
             event.reply(errorMsg);
         }
-        
     }
     else if (event.command.get_command_name() == "metrics")
     {
