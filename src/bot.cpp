@@ -25,7 +25,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
     if (event.command.get_command_name() == "latestprice")
     {
         std::string symbol = std::get<std::string>(event.get_parameter("symbol"));
-        std::string priceStr = getFormattedPrice(symbol, true);
+        std::string priceStr = getFormattedPrice(symbol, true, true);
         event.reply(priceStr);
     }
     else if (event.command.get_command_name() == "pricegraph")
@@ -138,24 +138,24 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         std::string region = std::get<std::string>(event.get_parameter("region"));
         std::string description = std::get<std::string>(event.get_parameter("description"));
         bool showDesc = (description == "n") ? false : true;
-        event.reply(getFormattedJSON("../data/indices.json", region, true, showDesc));
+        event.reply(getFormattedJSON("../data/indices.json", region, true, showDesc, true));
     }
     else if (event.command.get_command_name() == "commodities")
     {
-        event.reply(getFormattedJSON("../data/commodities.json", "commodities", true));
+        event.reply(getFormattedJSON("../data/commodities.json", "commodities", true, false, true));
     }
     else if (event.command.get_command_name() == "currencies")
     {
-        event.reply(getFormattedJSON("../data/currencies.json", "currencies", true));
+        event.reply(getFormattedJSON("../data/currencies.json", "currencies", true, false, true));
     }
     else if (event.command.get_command_name() == "industries")
     {
         std::string industry = std::get<std::string>(event.get_parameter("industry"));
-        event.reply(getFormattedJSON("../data/industries.json", industry, true));
+        event.reply(getFormattedJSON("../data/industries.json", industry, true, false, true));
     }
     else if (event.command.get_command_name() == "crypto")
     {
-        event.reply(getFormattedJSON("../data/currencies.json", "cryptocurrencies", true));
+        event.reply(getFormattedJSON("../data/currencies.json", "cryptocurrencies", true, false, true));
     }
 }
 

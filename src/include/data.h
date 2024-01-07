@@ -82,8 +82,9 @@ std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, c
 /// If something went wrong, it will return the following string: "Could not fetch latest price data. Symbol may be invalid."
 /// @param symbol The symbol of the stock/future/index/crypto.
 /// @param markdown When set to true, the formatted string contains Markdown syntax to make it more visually appealing.
+/// @param closedWarning When set to true, the formatted string will contain a note in case the market of the equity is closed.
 /// @return A string containing the latest price and % change information.
-std::string getFormattedPrice(const std::string &symbol, bool markdown = false);
+std::string getFormattedPrice(const std::string &symbol, bool markdown = false, bool closedWarning = false);
 
 /// Function to fetch historical stock/future/index/crypto data from Yahoo Finance and write to a txt file.
 /// The txt file will be named {symbol}_{duration}.txt and will be saved in the "data" folder.

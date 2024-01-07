@@ -139,13 +139,13 @@ std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, c
     return ohlcData;
 }
 
-std::string getFormattedPrice(const std::string &symbol, bool markdown)
+std::string getFormattedPrice(const std::string &symbol, bool markdown, bool closedWarning)
 {
     // Fetch data
-    Metrics equityMetrics = fetchMetrics(symbol);
+    Metrics data = fetchMetrics(symbol);
 
     // Check if there is a price
-    if (equityMetrics.latestPrice == 0)
+    if (data.latestPrice == 0)
     {
         return "Could not fetch latest price data. Symbol may be invalid.";
     }
@@ -154,21 +154,33 @@ std::string getFormattedPrice(const std::string &symbol, bool markdown)
     std::ostringstream resultStream;
     if (!markdown)
     {
-        resultStream << "Latest Price for " << equityMetrics.name << ": " << std::fixed << std::setprecision(2) << equityMetrics.latestPrice << " " << equityMetrics.currency
-                     << " (" << (equityMetrics.latestChange >= 0 ? "+" : "") << std::fixed << std::setprecision(2) << equityMetrics.latestChange << "%)";
-    }
-    else
-    {
-        resultStream << "### Latest Price for " << equityMetrics.name << "\n"
-                     << "`" << std::fixed << std::setprecision(2) << equityMetrics.latestPrice << " " << equityMetrics.currency;
-
-        if (equityMetrics.latestChange >= 0)
+        resultStream << "Latest Price for " << data.name << ": " << std::fixed << std::setprecision(2) << data.latestPrice << " " << data.currency
+                     << " (" << (data.latestChange >= 0 ? "+" : "") << std::fixed << std::setprecision(2) << data.latestChange << "%)";
+        if (closedWarning == true && data.marketState != "REGULAR") // Add note if market is not open
         {
-            resultStream << " (+" << std::fixed << std::setprecision(2) << equityMetrics.latestChange << "%)`:chart_with_upwards_trend:";
+            resultStream << " *Market is currently closed*" << std::endl;
         }
         else
         {
-            resultStream << " (" << std::fixed << std::setprecision(2) << equityMetrics.latestChange << "%)`:chart_with_downwards_trend:";
+            resultStream << "\n"; // closedWarning adds new line, so in case of no warning, add close line here
+        }
+    }
+    else
+    {
+        resultStream << "### Latest Price for " << data.name << "\n`" << std::fixed << std::setprecision(2) << data.latestPrice << " " << data.currency;
+        
+        if (data.latestChange >= 0)
+        {
+            resultStream << " (+" << std::fixed << std::setprecision(2) << data.latestChange << "%)`:chart_with_upwards_trend:";
+        }
+        else
+        {
+            resultStream << " (" << std::fixed << std::setprecision(2) << data.latestChange << "%)`:chart_with_downwards_trend:";
+        }
+
+        if (closedWarning == true && data.marketState != "REGULAR") // Add note if market is not open
+        {
+            resultStream << " *Market is currently closed*" << std::endl;
         }
     }
 
@@ -457,19 +469,23 @@ std::string getFormattedPrices(std::vector<std::string> symbols, std::vector<std
             {
                 formattedString << descriptions[i] << std::endl;
             }
-            if (closedWarning == true && data.marketState != "REGULAR") // Add note if market is not open
-            {
-                formattedString << "Note: market is currently closed" << std::endl;
-            }
             formattedString << std::fixed << std::setprecision(2);
             formattedString << "- Latest price: " << data.latestPrice << " " << data.currency;
             if (data.latestChange >= 0)
             {
-                formattedString << " (+" << data.latestChange << "%)\n";
+                formattedString << " (+" << data.latestChange << "%)";
             }
             else
             {
-                formattedString << " (" << data.latestChange << "%)\n";
+                formattedString << " (" << data.latestChange << "%)";
+            }
+            if (closedWarning == true && data.marketState != "REGULAR") // Add note if market is not open
+            {
+                formattedString << " *Market is currently closed*" << std::endl;
+            }
+            else
+            {
+                formattedString << "\n"; // closedWarning adds new line, so in case of no warning, add close line here
             }
         }
         else
@@ -486,19 +502,24 @@ std::string getFormattedPrices(std::vector<std::string> symbols, std::vector<std
             {
                 formattedString << descriptions[i] << std::endl;
             }
-            if (closedWarning == true && data.marketState != "REGULAR") // Add note if market is not open
-            {
-                formattedString << "Note: market is currently closed" << std::endl;
-            }
             formattedString << std::fixed << std::setprecision(2);
             formattedString << "- Latest price: `" << data.latestPrice << " " << data.currency;
             if (data.latestChange >= 0)
             {
-                formattedString << " (+" << data.latestChange << "%)`:chart_with_upwards_trend:\n";
+                formattedString << " (+" << data.latestChange << "%)`:chart_with_upwards_trend:";
             }
             else
             {
-                formattedString << " (" << data.latestChange << "%)`:chart_with_downwards_trend:\n";
+                formattedString << " (" << data.latestChange << "%)`:chart_with_downwards_trend:";
+            }
+
+            if (closedWarning == true && data.marketState != "REGULAR") // Add note if market is not open
+            {
+                formattedString << " *Market is currently closed*" << std::endl;
+            }
+            else
+            {
+                formattedString << "\n"; // closedWarning adds new line, so in case of no warning, add close line here
             }
         }
     }
