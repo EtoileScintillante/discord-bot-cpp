@@ -39,7 +39,7 @@ void createCandle(std::string symbol, std::string duration);
 /// @note Please note that using OHLCV data of a period >6 months may lead
 ///       to a candlestick chart and volume graph that are not clearly readable. In such cases, the candlesticks
 ///       and volume bars may appear very thin or small, making it hard to discern the details.
-void createCandleAndVolume(std::string symbol, std::string duration);
+void createCandleWithVolume(std::string symbol, std::string duration);
 
 
 #endif // VISUALIZE_H

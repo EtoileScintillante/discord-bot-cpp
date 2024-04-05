@@ -68,10 +68,7 @@ void priceGraph(std::string symbol, std::string duration, int mode)
     // Create the price graph
     auto fig = matplot::figure(true);
     fig->quiet_mode(true);
-    if (dates.size() > 100)
-    {
-        fig->size(900, 600); // Bigger graph for longer periods
-    }
+    fig->size(900, 600); 
     matplot::hold(matplot::on);
     matplot::xlim({-1, xAxis[xAxis.size()-1]+1}); // Small offset from edges of figure, to make sure the line(s) does not cross the axis
 
@@ -182,10 +179,7 @@ void createCandle(std::string symbol, std::string duration)
     // Create the candlestick chart
     auto fig = matplot::figure(true);
     fig->quiet_mode(true);
-    if (dates.size() > 50)
-    {
-        fig->size(900, 600); // Bigger chart for longer periods
-    }
+    fig->size(900, 600); 
     matplot::hold(matplot::on);
     matplot::ylim({+lowestPrice * 0.99, +highestPrice * 1.01});
     matplot::xlim({-1, xAxis[xAxis.size()-1]+1}); // Small offset to make sure the first and last candles are not drawn in the axis
@@ -225,7 +219,7 @@ void createCandle(std::string symbol, std::string duration)
     //matplot::show();
 }
 
-void createCandleAndVolume(std::string symbol, std::string duration)
+void createCandleWithVolume(std::string symbol, std::string duration)
 {
     // Fetch data
     Metrics data = fetchMetrics(symbol);
@@ -303,10 +297,7 @@ void createCandleAndVolume(std::string symbol, std::string duration)
     // Create the candlestick chart
     auto fig = matplot::figure(true);
     fig->quiet_mode(true);
-    if (dates.size() > 50)
-    {
-        fig->size(900, 600); // Bigger chart for longer periods
-    }
+    fig->size(900, 600);
     matplot::hold(matplot::on);
     matplot::ylim({+lowestPrice * 0.99, +highestPrice * 1.01});
     matplot::ylabel("Price in " + data.currency);
