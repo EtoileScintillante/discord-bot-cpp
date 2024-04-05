@@ -32,7 +32,6 @@ struct Metrics
     std::string symbol = "-";      // Symbol
     std::string marketState = "_"; // State of market (Open/Regular, Closed, Pre, Post)
     double marketCap = 0;          // Market capitalization, i.e. amount of shares (or coins in case of crypto) * price
-    double dividendYield = 0;      // Dividend yield as a percentage
     double peRatio = 0;            // Price-to-earnings ratio (P/E ratio) indicating stock valuation
     double latestPrice = 0;        // Latest price
     double latestChange = 0;       // Latest price change in percentage (compared to open price of that day)
@@ -95,7 +94,7 @@ void fetchAndWriteEquityData(const std::string &symbol, const std::string &durat
 
 /// Function to fetch stock/future/index/crypto metrics from Yahoo Finance API for a single symbol.
 /// @param symbol The symbol of the stock/future/index/crypto.
-/// @return Metrics struct containing price info, dividend yield, market capitalization and more.
+/// @return Metrics struct containing price info, market capitalization and more.
 Metrics fetchMetrics(const std::string &symbol);
 
 /// Function to get stock/future/index/crypto metrics in a readable way.

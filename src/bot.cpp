@@ -103,7 +103,7 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         }
         
         // Create candlestick chart
-        (showV == "n") ? createCandle(symbol, period) : createCandleAndVolume(symbol, period);
+        (showV == "n") ? createCandle(symbol, period) : createCandleWithVolume(symbol, period);
         
         // Additional delay to make sure the file is fully written to disk
         // Without this delay the bot sends an empty image file

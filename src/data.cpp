@@ -257,7 +257,7 @@ Metrics fetchMetrics(const std::string &symbol)
     Metrics equityMetrics;
 
     // Construct the Yahoo Finance API URL with the symbol
-    std::string apiUrl = "https://query1.finance.yahoo.com/v7/finance/options/" + symbol;
+    std::string apiUrl = "https://query1.finance.yahoo.com/v6/finance/options/" + symbol;
 
     // Fetch data from the Yahoo Finance API
     std::string response = httpGet(apiUrl);
@@ -284,11 +284,7 @@ Metrics fetchMetrics(const std::string &symbol)
         const rapidjson::Value &quote = optionChain["quote"];
 
         // Extract metrics from quote object
-        if (quote.HasMember("displayName") && quote["displayName"].IsString()) // name from displayName
-        {
-            equityMetrics.name = quote["displayName"].GetString();
-        }
-        else if ((quote.HasMember("shortName") && quote["shortName"].IsString())) // name from shortName
+        if ((quote.HasMember("shortName") && quote["shortName"].IsString())) // name from shortName
         {
             equityMetrics.name = quote["shortName"].GetString();
         }
@@ -307,10 +303,6 @@ Metrics fetchMetrics(const std::string &symbol)
         if (quote.HasMember("marketCap") && quote["marketCap"].IsNumber()) // marketCap
         {
             equityMetrics.marketCap = quote["marketCap"].GetDouble();
-        }
-        if (quote.HasMember("dividendYield") && quote["dividendYield"].IsNumber()) // dividendYield
-        {
-            equityMetrics.dividendYield = quote["dividendYield"].GetDouble();
         }
         if (quote.HasMember("trailingPE") && quote["trailingPE"].IsNumber()) // peRatio
         {
@@ -389,7 +381,6 @@ std::string getFormattedMetrics(const std::string &symbol, bool markdown)
         formattedMetrics << "Metrics for " << metrics.name << ":\n";
         formattedMetrics << std::fixed << std::setprecision(2);
         formattedMetrics << "- Market Cap:         " << metrics.marketCap << " " << metrics.currency << "\n";
-        formattedMetrics << "- Dividend Yield:     " << metrics.dividendYield << "%\n";
         formattedMetrics << "- P/E Ratio:          " << metrics.peRatio << "\n";
         formattedMetrics << "- Latest Price:       " << metrics.latestPrice << " " << metrics.currency << "\n";
         formattedMetrics << "- Open price:         " << metrics.openPrice << " " << metrics.currency << "\n";
@@ -408,7 +399,6 @@ std::string getFormattedMetrics(const std::string &symbol, bool markdown)
         formattedMetrics << "### Metrics for " << metrics.name << "\n";
         formattedMetrics << std::fixed << std::setprecision(2);
         formattedMetrics << "- Market Cap:                          `" << metrics.marketCap << " " << metrics.currency << "`\n";
-        formattedMetrics << "- Dividend Yield:                     `" << metrics.dividendYield << "%`\n";
         formattedMetrics << "- P/E Ratio:                              `" << metrics.peRatio << "`\n";
         formattedMetrics << "- Latest Price:                         `" << metrics.latestPrice << " " << metrics.currency << "`\n";
         formattedMetrics << "- Open price:                           `" << metrics.openPrice << " " << metrics.currency << "`\n";
