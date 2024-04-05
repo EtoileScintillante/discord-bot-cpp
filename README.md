@@ -16,7 +16,7 @@ Important to note is that data may be delayed.
   - Fetches equity metrics  
   - Input: equity symbol
 
-<img src="docs/metrics.png" alt="metrics example" width="350" height="auto" />
+<img src="docs/metric.png" alt="metrics example" width="350" height="auto" />
 
 ### /majorindices
   - Fetches latest price data for certain major indices based on the given region  
@@ -50,13 +50,13 @@ Important to note is that data may be delayed.
   - Fetches price data and plots the open and/or close prices
   - Input: equity symbol, period (e.g. 6 months, 2 weeks, etc.), mode (only open/only close/both)
 
-<img src="docs/pricegraph.png" alt="price graph example" width="500" height="auto" />
+<img src="docs/pricechart.png" alt="price graph example" width="500" height="auto" />
 
 ### /candlestick
   - Fetches OHLC data and creates a candlestick chart, optionally with volumes
   - Input: equity symbol, period (e.g. 6 months, 2 weeks, etc.), volume (yes/no)
 
-<img src="docs/candlestick.png" alt="candlestick example" width="500" height="auto" />
+<img src="docs/candle.png" alt="candlestick example" width="500" height="auto" />
 
 ## Building and Running the Bot (macOS) 
 ### Prerequisites
