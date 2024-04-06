@@ -103,18 +103,18 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
         }
         
         // Create candlestick chart
-        (showV == "n") ? createCandle(symbol, period) : createCandleWithVolume(symbol, period);
+        (showV == "n") ? createCandleChart(symbol, period, false) : createCandleChart(symbol, period, true);
         
         // Additional delay to make sure the file is fully written to disk
         // Without this delay the bot sends an empty image file
         std::this_thread::sleep_for(std::chrono::milliseconds{1000});
 
         // If the file exists, add it to the message
-        std::string imagePath = (showV == "n") ? "../images/candle_chart.png" : "../images/candle_volume.png";
+        std::string imagePath = "../images/candle_chart.png";
         if (std::filesystem::exists(imagePath))
         {
             dpp::message msg{"### Candlestick chart for " + name + "\n" + note};
-            msg.add_file(showV == "n" ? "candle_chart.png" : "candle_volume.png", dpp::utility::read_file(imagePath));
+            msg.add_file("candle_chart.png", dpp::utility::read_file(imagePath));
             event.reply(msg);
             
             // Delete the file after sending the message

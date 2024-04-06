@@ -21,25 +21,16 @@
 ///             Any other value will result in an error message and no plot.
 void priceGraph(std::string symbol, std::string duration, int mode);
 
-/// Plots OHLC data and saves the candlestick chart as candle_chart.png in the folder 'images'.
-/// This function fetches OHLC (Open-High-Low-Close) data and creates a candlestick chart.
-/// The interval of the data is one day.
+/// Plots OHLC(V) data and saves the candlestick chart as candle_chart.png in the folder 'images'.
+/// This function fetches OHLCV (Open-High-Low-Close-Volume) data and creates a candlestick chart,
+/// optionally with the volume bars plotted at the bottom. The interval of the data is one day.
 /// @param symbol The symbol of the stock/future/index/crypto.
 /// @param duration The duration/period in the format: 1y, 6mo, 2w, 12d, etc.
-/// @note Please note that using OHLC data of a period >6 months may lead
-///       to a candlestick chart that is not clearly readable. In such cases, the candlesticks
-///       may appear very thin or small, making it hard to discern the details.
-void createCandle(std::string symbol, std::string duration);
-
-/// Plots OHLCV data and saves the candlestick chart as candle_volume.png in the folder 'images'.
-/// This function fetches OHLCV (Open-High-Low-Close-Volume) data and creates a candlestick chart with the volume bars
-/// plotted at the bottom of the chart. The interval of the data is one day.
-/// @param symbol The symbol of the stock/future/index/crypto.
-/// @param duration The duration/period in the format: 1y, 6mo, 2w, 12d, etc.
+/// @param withVolume Set to true if you want to plot volumes as well.
 /// @note Please note that using OHLCV data of a period >6 months may lead
 ///       to a candlestick chart and volume graph that are not clearly readable. In such cases, the candlesticks
 ///       and volume bars may appear very thin or small, making it hard to discern the details.
-void createCandleWithVolume(std::string symbol, std::string duration);
+void createCandleChart(std::string symbol, std::string duration, bool withVolume = false);
 
 
 #endif // VISUALIZE_H
