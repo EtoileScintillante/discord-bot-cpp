@@ -47,28 +47,28 @@ std::time_t convertToUnixTimestamp(const std::string &date)
     return timestamp;
 }
 
-static std::string httpGet(const std::string &url)
-{
-    std::string response;
+std::string httpGet(const std::string& url) {
+    CURL* curl;
+    CURLcode res;
+    std::string readBuffer;
 
-    CURL *curl = curl_easy_init();
-    if (curl)
-    {
+    curl = curl_easy_init();
+    if(curl) {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        // Set the User-Agent header
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+        // Set the callback function to handle the response data
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        // Pass the string to write the response data to
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
 
-        CURLcode res = curl_easy_perform(curl);
-        if (res != CURLE_OK)
-        {
+        res = curl_easy_perform(curl);
+        if(res != CURLE_OK) {
             std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
         }
-
         curl_easy_cleanup(curl);
     }
-
-    return response;
+    return readBuffer;
 }
 
 std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, const std::string &duration)
