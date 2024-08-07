@@ -18,6 +18,12 @@ Important to note is that data may be delayed.
 
 <img src="docs/metric.png" alt="metrics example" width="350" height="auto" />
 
+### /movements
+  - Fetches price data and lists the top 5 biggest gains and losses in terms of percentage change
+  - Input: equity symbol, period (e.g. 6 months, 2 weeks, etc.)
+
+<img src="docs/movements.png" alt="movements example" width="450" height="auto" />
+
 ### /majorindices
   - Fetches latest price data for certain major indices based on the given region  
     and optionally adds a short description (one sentence) about the indices  
