@@ -157,6 +157,76 @@ void Bot::commandHandler(const dpp::slashcommand_t &event)
     {
         event.reply(getFormattedJSON("../data/currencies.json", "cryptocurrencies", true, false, true));
     }
+    else if (event.command.get_command_name() == "movements")
+    {
+        std::string symbol = std::get<std::string>(event.get_parameter("symbol"));
+        std::string period = std::get<std::string>(event.get_parameter("period"));
+
+        // Get name of symbol (this will be added to the message instead of just adding the symbol)
+        Metrics metrics = fetchMetrics(symbol);
+        std::string name = metrics.name;
+
+        // Check if duration is valid, and not too short
+        std::time_t duration = getDurationInSeconds(period);
+        std::string note = "";
+        if (duration == 0)
+        {
+            dpp::message errorMsg{"Invalid period format. Examples of supported formats: 7mo, 1w, 3y, 6d, "
+                                "where mo = month, w = week, y = year, and d = day."};
+            event.reply(errorMsg);
+            return;
+        }
+        if (duration < 2592000)
+        {
+            duration = 2592000;
+            note = "Note: the period provided was too short and has therefore been set to one month.";
+        }
+
+        // Extract numeric and non-numeric parts of the period
+        std::string numericPart = "";
+        std::string nonNumericPart = "";
+        for (char c : period)
+        {
+            if (isdigit(c))
+            {
+                numericPart += c;
+            }
+            else
+            {
+                nonNumericPart += c;
+            }
+        }
+
+        int timeValue = std::stoi(numericPart);
+        char periodType = nonNumericPart[0];
+
+        // Construct the period string for the message
+        std::string periodDescription;
+        if (periodType == 'y')
+        {
+            periodDescription = (timeValue == 1) ? "in the last year" : "in the last " + std::to_string(timeValue) + " years";
+        }
+        else if (periodType == 'm')
+        {
+            periodDescription = (timeValue == 1) ? "in the last month" : "in the last " + std::to_string(timeValue) + " months";
+        }
+        else if (periodType == 'w')
+        {
+            periodDescription = "in the last " + std::to_string(timeValue) + " weeks";
+        }
+        else if (periodType == 'd')
+        {
+            periodDescription = "in the last " + std::to_string(timeValue) + " days";
+        }
+
+        // Get top 5 biggest gains and losses (in % change)
+        std::string result = getFormattedGainsLosses(symbol, period, true);
+        if (result != "")
+        {
+            dpp::message msg{"### Biggest gains and losses for " + name + " " + periodDescription + "\n" + note + "\n" + result};
+            event.reply(msg);
+        }
+    }
 }
 
 void Bot::onReady(const dpp::ready_t &event)
@@ -235,6 +305,13 @@ void Bot::registerCommands()
 
     // Create slash command for crypto
     dpp::slashcommand crypto("crypto", "Get the latest price info for the 5 biggest cryptocurrencies (by market cap.)", bot.me.id);
+
+    // Create slash command for biggest gains and losses
+    dpp::slashcommand movements("movements", "Get the top 5 biggest gains and losses of a stock, future, index or crypto", bot.me.id);
+    movements.add_option(
+        dpp::command_option(dpp::co_string, "symbol", "Symbol", true));
+    movements.add_option(
+        dpp::command_option(dpp::co_string, "period", "Period (e.g. 10d, 2w, 3mo, 1y)", true));
     
     // Add commands to vector and register them
     std::vector<dpp::slashcommand> commands;
@@ -247,5 +324,6 @@ void Bot::registerCommands()
     commands.push_back(currencies);
     commands.push_back(industries);
     commands.push_back(crypto);
+    commands.push_back(movements);
     bot.global_bulk_command_create(commands);
 }
