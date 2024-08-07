@@ -187,71 +187,6 @@ std::string getFormattedPrice(const std::string &symbol, bool markdown, bool clo
     return resultStream.str();
 }
 
-void fetchAndWriteEquityData(const std::string &symbol, const std::string &duration)
-{
-    // Define the current timestamp as the end time
-    std::time_t endTime = std::time(nullptr);
-
-    // Calculate the start time based on the duration
-    std::time_t startTime = endTime;
-    startTime -= getDurationInSeconds(duration);
-    if (startTime == endTime)
-    {
-        std::cerr << "Invalid duration format. Examples of supported formats: 7m, 1w, 3y, 6d, where m = month, w = week, y = year, and d = day." << std::endl;
-        return;
-    }
-
-    // Convert timestamps to strings
-    std::ostringstream startTimestamp, endTimestamp;
-    startTimestamp << startTime;
-    endTimestamp << endTime;
-
-    // Build the URL for historical data
-    std::string url = "https://query1.finance.yahoo.com/v7/finance/download/" + symbol +
-                      "?period1=" + startTimestamp.str() + "&period2=" + endTimestamp.str() +
-                      "&interval=1d&events=history";
-
-    // Fetch historical data using the URL
-    std::string response = httpGet(url);
-
-    // Check if response contains an error or is empty
-    if (response.find("404 Not Found: No data found, symbol may be delisted") != std::string::npos)
-    {
-        std::cerr << "Symbol not found or delisted: " << symbol << std::endl;
-        return;
-    }
-    if (response.empty())
-    {
-        std::cerr << "Failed to fetch data from the server." << std::endl;
-        return;
-    }
-
-    // Get the current directory where the executable is located
-    std::string exePath = std::filesystem::current_path().string(); // Use std::experimental::filesystem in C++14
-
-    // Construct the file path to the "data" folder
-    std::string chartPath = exePath + "/../data/"; // Assuming the "data" folder is one level up from the executable
-
-    // Create the "data" folder if it doesn't exist
-    std::filesystem::create_directory(chartPath); // Use std::experimental::filesystem in C++14
-
-    // Construct the file path for the output file inside the "data" folder
-    std::string filename = chartPath + symbol + "_" + duration + ".txt";
-    std::ofstream outFile(filename);
-
-    if (outFile)
-    {
-        outFile << response;
-        std::cout << "Data for " << symbol << " in the last " << duration << " has been written to " << filename << std::endl;
-    }
-    else
-    {
-        std::cerr << "Failed to open file: " << filename << std::endl;
-    }
-
-    outFile.close();
-}
-
 Metrics fetchMetrics(const std::string &symbol)
 {
     Metrics equityMetrics;
@@ -566,4 +501,104 @@ std::string getFormattedJSON(const std::string &pathToJson, const std::string &k
     }
 
     return getFormattedPrices(symbols, names, descriptions, markdown, closedWarning);
+}
+
+std::string getFormattedGainsLosses(const std::string &symbol, const std::string &duration, bool markdown)
+{
+    // Fetch data
+    Metrics data = fetchMetrics(symbol);
+    std::vector<std::vector<std::string>> ohlcData = fetchOHLCData(symbol, duration);
+    if (ohlcData.empty())
+    {
+        std::cout << "No OHLC data available." << std::endl;
+        return "";
+    }
+
+    // Vector to store percentage changes with corresponding dates
+    std::vector<GainLoss> changes;
+
+    // Iterate over data and calculate the percentage change for each day
+    for (const auto &day : ohlcData)
+    {
+        if (day.size() < 5) continue; // Ensure there's enough data
+        const std::string &date = day[0];
+        double open = std::stod(day[1]);
+        double close = std::stod(day[4]);
+
+        // Calculate percentage change
+        double percentageChange = ((close - open) / open) * 100.0;
+        changes.emplace_back(date, percentageChange, open, close);
+    }
+
+    // Sort changes to find top 5 gains and losses
+    std::sort(changes.begin(), changes.end(), [](const GainLoss &a, const GainLoss &b) {
+        return a.percentageChange > b.percentageChange;
+    });
+
+    // Extract top 5 gains
+    std::vector<GainLoss> topGains(changes.begin(), changes.begin() + std::min<size_t>(5, changes.size()));
+    // Extract top 5 losses
+    std::vector<GainLoss> topLosses(changes.end() - std::min<size_t>(5, changes.size()), changes.end());
+
+    // Sort losses from most negative to least negative
+    std::sort(topLosses.begin(), topLosses.end(), [](const GainLoss &a, const GainLoss &b) {
+        return a.percentageChange < b.percentageChange;
+    });
+
+    // Format the results
+    std::ostringstream result;
+
+    if (markdown)
+    {
+        result << "### Top 5 Gains :chart_with_upwards_trend:\n";
+    }
+    else
+    {
+        result << "Top 5 Gains:\n";
+    }
+    for (size_t i = 0; i < topGains.size(); ++i)
+    {
+        if (markdown)
+        {
+            result << i + 1 << ". " << topGains[i].date << ": `" 
+                << std::fixed << std::setprecision(2) << topGains[i].percentageChange 
+                << "% (open: " << topGains[i].openPrice << " " << data.currency 
+                << ", close: " << topGains[i].closePrice << " " << data.currency << ")`\n";
+        }
+        else
+        {
+            result << i + 1 << ". " << topGains[i].date << ": " 
+                << std::fixed << std::setprecision(2) << topGains[i].percentageChange 
+                << "% (open: " << topGains[i].openPrice << " " << data.currency 
+                << ", close: " << topGains[i].closePrice << " " << data.currency << ")\n";
+        }
+    }
+
+    if (markdown)
+    {
+        result << "\n### Top 5 Losses :chart_with_downwards_trend:\n";
+    }
+    else
+    {
+        result << "\nTop 5 Losses:\n";
+    }
+    for (size_t i = 0; i < topLosses.size(); ++i)
+    {
+        if (markdown)
+        {
+            result << i + 1 << ". " << topLosses[i].date << ": `" 
+                << std::fixed << std::setprecision(2) << topLosses[i].percentageChange 
+                << "% (open: " << topLosses[i].openPrice << " " << data.currency 
+                << ", close: " << topLosses[i].closePrice << " " << data.currency << ")`\n";
+        }
+        else
+        {
+            result << i + 1 << ". " << topLosses[i].date << ": " 
+                << std::fixed << std::setprecision(2) << topLosses[i].percentageChange 
+                << "% (open: " << topLosses[i].openPrice << " " << data.currency 
+                << ", close: " << topLosses[i].closePrice << " " << data.currency << ")\n";
+        }
+    }
+
+    return result.str();
 }

@@ -46,6 +46,18 @@ struct Metrics
     double avgVol_3mo = 0;         // Average daily trading volumes over a 3-month period
 };
 
+// Struct used in the getFormattedGainsLosses function
+// This way it is easy to save the dates of the biggest gains/losses
+struct GainLoss {
+    std::string date = "-";
+    double percentageChange = 0;
+    double openPrice = 0;
+    double closePrice = 0;
+
+    GainLoss(const std::string &d, double p, double o, double c) 
+        : date(d), percentageChange(p), openPrice(o), closePrice(c) {}
+};
+
 /// Callback function to write received data to a string.
 /// @param ptr Pointer to the received data buffer.
 /// @param size Represents the size of each data element in the buffer (typically the size of a single character, byte).
@@ -85,13 +97,6 @@ std::vector<std::vector<std::string>> fetchOHLCData(const std::string &symbol, c
 /// @return A string containing the latest price and % change information.
 std::string getFormattedPrice(const std::string &symbol, bool markdown = false, bool closedWarning = false);
 
-/// Function to fetch historical stock/future/index/crypto data from Yahoo Finance and write to a txt file.
-/// The txt file will be named {symbol}_{duration}.txt and will be saved in the "data" folder.
-/// The interval of the data is one day.
-/// @param symbol The symbol of the stock/future/index/crypto.
-/// @param duration The duration string in the format: 1y, 6mo, 2w, 12d, etc.
-void fetchAndWriteEquityData(const std::string &symbol, const std::string &duration);
-
 /// Function to fetch stock/future/index/crypto metrics from Yahoo Finance API for a single symbol.
 /// @param symbol The symbol of the stock/future/index/crypto.
 /// @return Metrics struct containing price info, market capitalization and more.
@@ -129,5 +134,13 @@ std::string getFormattedPrices(std::vector<std::string> symbols, std::vector<std
 /// @param closedWarning When set to true, the formatted string will contain a note in case the market of the equity is closed.
 /// @return A string with the formatted price data (and optionally descriptions).
 std::string getFormattedJSON(const std::string &pathToJson, const std::string &key, bool markdown = false, bool description = false, bool closedWarning = false);
+
+/// Function to get the top 5 biggest gains and losses (in percentage change) of a stock/future/index/crypto 
+/// during a given period. The daily opening and closing prices are used to calculate this.
+/// @param symbol The symbol of the stock/future/index/crypto.
+/// @param duration The duration/period in the format: 1y, 6mo, 2w, 12d, etc.
+/// @param markdown When set to true, the formatted string contains Markdown syntax to make it more visually appealing.
+/// @return A formatted string with the biggest gains and losses.
+std::string getFormattedGainsLosses(const std::string &symbol, const std::string &duration, bool markdown = false);
 
 #endif // DATA_H

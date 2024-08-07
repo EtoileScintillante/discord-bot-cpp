@@ -27,7 +27,7 @@ void priceGraph(std::string symbol, std::string duration, int mode);
 /// @param symbol The symbol of the stock/future/index/crypto.
 /// @param duration The duration/period in the format: 1y, 6mo, 2w, 12d, etc.
 /// @param withVolume Set to true if you want to plot volumes as well.
-/// @note Please note that using OHLCV data of a period >6 months may lead
+/// @note Please note that using OHLCV data of a period >12 months may lead
 ///       to a candlestick chart and volume graph that are not clearly readable. In such cases, the candlesticks
 ///       and volume bars may appear very thin or small, making it hard to discern the details.
 void createCandleChart(std::string symbol, std::string duration, bool withVolume = false);
